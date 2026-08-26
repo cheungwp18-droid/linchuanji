@@ -357,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         ${e.book ? `<div class="book-cover tone-${tone}" aria-hidden="true">
           <div class="book-cover-rule"></div>
-          <span class="book-cover-kicker">林川集 · 文粹</span>
+          <span class="book-cover-kicker">林川集 · 文學經典</span>
           <strong>${esc(e.title)}</strong>
           <span class="book-cover-author">${esc(e.author)}</span>
           <span class="book-cover-count">${Number(e.book.count) || 0} ${esc(unit)}</span>
@@ -385,7 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function addTile(kind) {
     const t = document.createElement("div");
     t.className = "add-tile";
-    t.innerHTML = `<span>＋</span><em>${kind === "essay" ? "新增文集" : kind === "wencui" ? "新增文粹" : kind === "zawen" ? "新增雜文" : kind === "chuangzuo" ? "新增創作" : "新增詩詞"}</em>`;
+    t.innerHTML = `<span>＋</span><em>${kind === "essay" ? "新增文集" : kind === "wencui" ? "新增文學經典" : kind === "zawen" ? "新增雜文" : kind === "chuangzuo" ? "新增創作" : "新增詩詞"}</em>`;
     t.addEventListener("click", () => openForm(kind, null));
     return t;
   }
@@ -620,7 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
     prepareSheet(true);
     sheet.innerHTML = `
       <button class="close" aria-label="關閉">×</button>
-      <div class="s-meta"><span>${esc(entry.author)}</span><span>·</span><span>${esc(entry.season || "")}</span><span>·</span><span>${entry.book.novel ? "章回小說" : "文粹典籍"}</span></div>
+      <div class="s-meta"><span>${esc(entry.author)}</span><span>·</span><span>${esc(entry.season || "")}</span><span>·</span><span>${entry.book.novel ? "章回小說" : "文學經典"}</span></div>
       <div class="book-heading">
         <div><h2>${esc(entry.title)}</h2><p>${esc(entry.excerpt || "")}</p></div>
         <span class="book-total">${Number(entry.book.count) || 0} ${esc(unit)}</span>
@@ -635,7 +635,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const sourceUrl = /^https:\/\//.test(book.sourceUrl || "") ? book.sourceUrl : "#";
       sheet.innerHTML = `
         <button class="close" aria-label="關閉">×</button>
-        <div class="s-meta"><span>${esc(entry.author)}</span><span>·</span><span>${esc(entry.season || "")}</span><span>·</span><span>${entry.book.novel ? "章回小說" : "文粹典籍"}</span></div>
+        <div class="s-meta"><span>${esc(entry.author)}</span><span>·</span><span>${esc(entry.season || "")}</span><span>·</span><span>${entry.book.novel ? "章回小說" : "文學經典"}</span></div>
         <div class="book-heading">
           <div><h2>${esc(book.title || entry.title)}</h2><p>${esc(entry.excerpt || "")}</p></div>
           <span class="book-total">${book.count || book.items.length} ${esc(unit)}</span>
@@ -674,7 +674,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const pos = visibleIndexes.indexOf(index);
         page.innerHTML = `
           <div class="book-page-body">
-            <div class="book-page-meta">${esc(item.section || entry.season || "文粹")} · 第 ${index + 1}／${items.length} ${esc(unit)}</div>
+            <div class="book-page-meta">${esc(item.section || entry.season || "文學經典")} · 第 ${index + 1}／${items.length} ${esc(unit)}</div>
             <h3>${esc(item.title || "無題")}</h3>
             <div class="book-page-author">${esc(item.author || "佚名")}</div>
             <div class="book-text${["wc-daodejing", "wc-hanfu300", "wc-lunyu", "wc-mengzi", "wc-zhuangzi", "wc-guwenguanzhi", "wc-wenxuan"].includes(entry.id) || entry.book.novel || entry.book.prose ? " book-prose" : ""}">${lines}</div>
@@ -765,7 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
     prepareSheet(false);
     sheet.innerHTML = `
       <button class="close" aria-label="關閉">×</button>
-      <div class="s-meta"><span>${esc(e.author)}</span><span>·</span><span>${esc(e.season || "")}</span><span>·</span><span>文粹</span></div>
+      <div class="s-meta"><span>${esc(e.author)}</span><span>·</span><span>${esc(e.season || "")}</span><span>·</span><span>文學經典</span></div>
       <h2>${esc(e.title)}</h2>
       <div class="s-views" id="sViews"></div>
       <div class="s-body">${renderBody(e.body)}</div>
@@ -882,7 +882,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     sheet.innerHTML = `
       <button class="close" aria-label="關閉">×</button>
-      <h2 style="margin-bottom:1.4rem">${item ? "修改" : "新增"}·${kind === "essay" ? "文集" : kind === "wencui" ? "文粹" : kind === "zawen" ? "雜文" : kind === "chuangzuo" ? "創作" : "詩詞"}</h2>
+      <h2 style="margin-bottom:1.4rem">${item ? "修改" : "新增"}·${kind === "essay" ? "文集" : kind === "wencui" ? "文學經典" : kind === "zawen" ? "雜文" : kind === "chuangzuo" ? "創作" : "詩詞"}</h2>
       <form id="editForm">${body}
         <div class="btn-row">
           <button type="button" class="btn" data-cancel>取消</button>
@@ -1080,7 +1080,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ov.classList.add("open");
       input.value = "";
       meta.textContent = "";
-      results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文粹、文言文精讀教學、遊玩區間遍搜。</div>`;
+      results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文學經典、文言文精讀教學、遊玩區間遍搜。</div>`;
       setTimeout(() => input.focus(), 30);
     }
     function closeSearch() { ov.classList.remove("open"); }
@@ -1105,7 +1105,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const q = input.value.trim();
       if (!q) {
         meta.textContent = "";
-        results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文粹、雜文、文言文精讀教學、遊玩區間遍搜。</div>`;
+        results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文學經典、雜文、文言文精讀教學、遊玩區間遍搜。</div>`;
         return;
       }
       const ql = q.toLowerCase();
@@ -1123,7 +1123,7 @@ document.addEventListener("DOMContentLoaded", () => {
       (state.wencui || []).forEach(x => {
         if (x.private && !authorMode) return;
         if ([x.title, x.excerpt, x.author, x.season, x.seal, (x.body || []).join(" ")].join(" ").toLowerCase().includes(ql))
-          out.push({ kind: "wencui", id: x.id, title: x.title, text: (x.body || []).join(" "), tag: x.season || "文粹" });
+          out.push({ kind: "wencui", id: x.id, title: x.title, text: (x.body || []).join(" "), tag: x.season || "文學經典" });
       });
       (state.zawen || []).forEach(x => {
         if (x.private && !authorMode) return;
@@ -1153,7 +1153,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       results.innerHTML = out.map(r => {
-        const label = r.kind === "essay" ? "文集" : r.kind === "poem" ? "詩詞" : r.kind === "wencui" ? "文粹" : r.kind === "chuangzuo" ? "創作" : r.kind === "youwan" ? "遊玩" : r.kind === "wenyan" ? "文言文精讀教學" : "雜文";
+        const label = r.kind === "essay" ? "文集" : r.kind === "poem" ? "詩詞" : r.kind === "wencui" ? "文學經典" : r.kind === "chuangzuo" ? "創作" : r.kind === "youwan" ? "遊玩" : r.kind === "wenyan" ? "文言文精讀教學" : "雜文";
         return `<button class="search-result" data-kind="${r.kind}" data-id="${esc(r.id)}">
           <span class="sr-kind">${label}</span>
           <span class="sr-title">${esc(r.title)}</span>
