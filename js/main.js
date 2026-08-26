@@ -18,14 +18,21 @@ document.addEventListener("DOMContentLoaded", () => {
   function isImageLine(s) {
     s = (s || "").trim();
     if (!s) return false;
-    if (/^(\/images\/|https?:\/\/|data:image\/)/.test(s)) return true;
-    return /\.(png|jpe?g|gif|webp|bmp)$/i.test(s) && !/\s/.test(s);
+    if (/^(\/?images\/|https?:\/\/|data:image\/)/.test(s)) return true;
+    return /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(s) && !/\s/.test(s);
+  }
+
+  /* GitHub Pages 在 /linchuanji/ 下，根路徑 /images/ 會指到網站根而 404 */
+  function mediaSrc(s) {
+    s = String(s == null ? "" : s).trim();
+    if (s.startsWith("/images/")) return s.slice(1);
+    return s;
   }
 
   /* 文章正文：圖文交錯渲染（圖片行 -> <img>，其餘 -> <p>） */
   function renderBody(lines) {
     return (lines || []).map(l => isImageLine(l)
-      ? `<img class="s-inline-img" src="${esc(l.trim())}" alt="" loading="lazy" decoding="async">`
+      ? `<img class="s-inline-img" src="${esc(mediaSrc(l.trim()))}" alt="" loading="lazy" decoding="async">`
       : `<p>${esc(l)}</p>`).join("");
   }
 
@@ -119,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const idxs = imgLineIdxs();
       const urls = idxs.map(i => ta.value.split("\n")[i].trim());
       box.innerHTML = urls.map((u, k) =>
-        `<button type="button" class="img-thumb" data-i="${k}" title="點擊移除該圖"><img src="${esc(u)}" alt=""><span>✕</span></button>`
+        `<button type="button" class="img-thumb" data-i="${k}" title="點擊移除該圖"><img src="${esc(mediaSrc(u))}" alt=""><span>✕</span></button>`
       ).join("");
     };
     ta.addEventListener("input", render);
@@ -241,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <button data-act="edit" title="修改">✎</button>
           <button data-act="del" title="刪除">✕</button>
         </div>
-        ${(e.body || []).some(isImageLine) ? `<div class="card-img"><img src="${esc((e.body || []).find(isImageLine))}" alt="" loading="lazy" decoding="async"></div>` : ""}
+        ${(e.body || []).some(isImageLine) ? `<div class="card-img"><img src="${esc(mediaSrc((e.body || []).find(isImageLine)))}" alt="" loading="lazy" decoding="async"></div>` : ""}
         <div class="meta"><span>${esc(e.author)}</span><span class="dot"></span><span>${esc(e.season || "")}</span>${e.issue ? `<span class="dot"></span><span class="issue-badge">第${e.issue}期</span>` : ""}${e.private ? `<span class="dot"></span><span class="private-badge">私</span>` : ""}</div>
         <h3>${esc(e.title)}</h3>
         <p class="excerpt">${esc(e.excerpt || "")}</p>
@@ -347,7 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <strong>${esc(e.title)}</strong>
           <span class="book-cover-author">${esc(e.author)}</span>
           <span class="book-cover-count">${Number(e.book.count) || 0} ${esc(unit)}</span>
-        </div>` : ((e.body || []).some(isImageLine) ? `<div class="card-img"><img src="${esc((e.body || []).find(isImageLine))}" alt="" loading="lazy" decoding="async"></div>` : "")}
+        </div>` : ((e.body || []).some(isImageLine) ? `<div class="card-img"><img src="${esc(mediaSrc((e.body || []).find(isImageLine)))}" alt="" loading="lazy" decoding="async"></div>` : "")}
         <div class="meta"><span>${esc(e.author)}</span><span class="dot"></span><span>${esc(e.season || "")}</span>${e.issue ? `<span class="dot"></span><span class="issue-badge">第${e.issue}期</span>` : ""}${e.private ? `<span class="dot"></span><span class="private-badge">私</span>` : ""}</div>
         <h3>${esc(e.title)}</h3>
         <p class="excerpt">${esc(e.excerpt || "")}</p>
@@ -399,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <button data-act="edit" title="修改">✎</button>
           <button data-act="del" title="刪除">✕</button>
         </div>
-        ${(e.body || []).some(isImageLine) ? `<div class="card-img"><img src="${esc((e.body || []).find(isImageLine))}" alt="" loading="lazy" decoding="async"></div>` : ""}
+        ${(e.body || []).some(isImageLine) ? `<div class="card-img"><img src="${esc(mediaSrc((e.body || []).find(isImageLine)))}" alt="" loading="lazy" decoding="async"></div>` : ""}
         <div class="meta"><span>${esc(e.author)}</span><span class="dot"></span><span>${esc(e.season || "")}</span>${e.issue ? `<span class="dot"></span><span class="issue-badge">第${e.issue}期</span>` : ""}${e.private ? `<span class="dot"></span><span class="private-badge">私</span>` : ""}</div>
         <h3>${esc(e.title)}</h3>
         <p class="excerpt">${esc(e.excerpt || "")}</p>
@@ -433,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <button data-act="edit" title="修改">✎</button>
           <button data-act="del" title="刪除">✕</button>
         </div>
-        ${(e.body || []).some(isImageLine) ? `<div class="card-img"><img src="${esc((e.body || []).find(isImageLine))}" alt="" loading="lazy" decoding="async"></div>` : ""}
+        ${(e.body || []).some(isImageLine) ? `<div class="card-img"><img src="${esc(mediaSrc((e.body || []).find(isImageLine)))}" alt="" loading="lazy" decoding="async"></div>` : ""}
         <div class="meta"><span>${esc(e.author)}</span><span class="dot"></span><span>${esc(e.season || "")}</span>${e.issue ? `<span class="dot"></span><span class="issue-badge">第${e.issue}期</span>` : ""}${e.private ? `<span class="dot"></span><span class="private-badge">私</span>` : ""}</div>
         <h3>${esc(e.title)}</h3>
         <p class="excerpt">${esc(e.excerpt || "")}</p>
@@ -459,7 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!box) return;
     const a = state.about || {};
     const paras = (a.paragraphs || []).map(p => `<p>${esc(p)}</p>`).join("");
-    const imgs = (a.images || []).map(u => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async">`).join("");
+    const imgs = (a.images || []).map(u => `<img src="${esc(mediaSrc(u))}" alt="" loading="lazy" decoding="async">`).join("");
     box.innerHTML =
       `<p class="lead">${esc(a.lead || "")}</p>` + paras +
       (a.sig ? `<p class="sig">${esc(a.sig)}</p>` : "") +
@@ -541,7 +548,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <p style="text-indent:0;font-family:var(--kai);font-size:1.5rem;line-height:2.2;color:var(--ink);letter-spacing:.12em">${vlines}</p>
         ${p.note ? `<div class="s-note" style="text-align:left;border-left-color:var(--dai)">${esc(p.note)}</div>` : ""}
       </div>
-      ${(p.images && p.images.length) ? `<div class="s-imgs">${p.images.map(u => `<img src="${esc(u)}" alt="" loading="lazy" decoding="async">`).join("")}</div>` : ""}
+      ${(p.images && p.images.length) ? `<div class="s-imgs">${p.images.map(u => `<img src="${esc(mediaSrc(u))}" alt="" loading="lazy" decoding="async">`).join("")}</div>` : ""}
       <div class="s-stamp">${esc(p.author)}</div>
       ${commentSectionHTML("poem:" + p.id)}`;
     sheet.querySelector(".close").addEventListener("click", closeSheet);
