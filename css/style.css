@@ -80,7 +80,7 @@ body.sheet-open { overflow: hidden; }
   transform: rotate(-3deg);
   box-shadow: 0 1px 0 rgba(0,0,0,.2) inset;
 }
-.nav ul { display: flex; gap: clamp(.8rem, 2.4vw, 2rem); list-style: none; }
+.nav ul { display: flex; flex-wrap: wrap; gap: clamp(.55rem, 1.6vw, 1.5rem); list-style: none; }
 .nav a.link {
   position: relative;
   color: var(--ink-soft);
