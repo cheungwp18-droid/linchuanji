@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg6" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6ead1"/>
+      <stop offset="1" stop-color="#eedcb8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg6)"/>
+  <ellipse cx="400" cy="430" rx="220" ry="26" fill="#d9c69a" opacity=".6"/>
+
+  <!-- 牛皮紙包裝（花束） -->
+  <path d="M400 470 L300 250 L500 250 Z" fill="#c8a06a"/>
+  <path d="M400 470 L340 250 L300 250 Z" fill="#b78b52"/>
+  <path d="M400 470 L460 250 L500 250 Z" fill="#d3ab74"/>
+  <path d="M300 250 L500 250 L482 218 L318 218 Z" fill="#e0bd85"/>
+
+  <!-- 葉 -->
+  <g fill="#6b7f68">
+    <path d="M320 220 q-40 -30 -78 -18 q30 34 78 18 Z"/>
+    <path d="M480 220 q40 -30 78 -18 q-30 34 -78 18 Z"/>
+    <path d="M400 205 q-8 -46 12 -78 q18 40 -12 78 Z"/>
+    <path d="M355 212 q-30 -22 -30 -58 q36 22 30 58 Z"/>
+    <path d="M445 212 q30 -22 30 -58 q-36 22 -30 58 Z"/>
+  </g>
+
+  <!-- 紫色襯花 -->
+  <g fill="#7a5a86">
+    <circle cx="300" cy="200" r="8"/><circle cx="316" cy="186" r="7"/><circle cx="290" cy="184" r="6"/>
+    <circle cx="500" cy="200" r="8"/><circle cx="484" cy="186" r="7"/><circle cx="510" cy="184" r="6"/>
+    <circle cx="400" cy="150" r="7"/><circle cx="384" cy="140" r="6"/><circle cx="416" cy="140" r="6"/>
+  </g>
+
+  <!-- 粉紅玫瑰 -->
+  <g>
+    <g fill="#e79fb0">
+      <circle cx="330" cy="185" r="24"/><circle cx="318" cy="176" r="14"/><circle cx="344" cy="176" r="14"/><circle cx="330" cy="168" r="13"/>
+    </g>
+    <circle cx="330" cy="182" r="9" fill="#d47f93"/>
+    <g fill="#e79fb0">
+      <circle cx="470" cy="185" r="24"/><circle cx="458" cy="176" r="14"/><circle cx="484" cy="176" r="14"/><circle cx="470" cy="168" r="13"/>
+    </g>
+    <circle cx="470" cy="182" r="9" fill="#d47f93"/>
+  </g>
+
+  <!-- 黃玫瑰 -->
+  <g>
+    <g fill="#f0c96a">
+      <circle cx="400" cy="185" r="26"/><circle cx="386" cy="176" r="15"/><circle cx="414" cy="176" r="15"/><circle cx="400" cy="166" r="14"/>
+    </g>
+    <circle cx="400" cy="182" r="10" fill="#e0b44e"/>
+    <g fill="#f0c96a">
+      <circle cx="365" cy="150" r="18"/><circle cx="356" cy="144" r="11"/><circle cx="375" cy="144" r="11"/>
+    </g>
+    <circle cx="365" cy="147" r="7" fill="#e0b44e"/>
+    <g fill="#f0c96a">
+      <circle cx="435" cy="150" r="18"/><circle cx="426" cy="144" r="11"/><circle cx="445" cy="144" r="11"/>
+    </g>
+    <circle cx="435" cy="147" r="7" fill="#e0b44e"/>
+  </g>
+
+  <!-- 包裝繫繩 -->
+  <path d="M362 300 q38 26 76 0" stroke="#9e2b25" stroke-width="6" fill="none"/>
+  <circle cx="400" cy="312" r="7" fill="#9e2b25"/>
+</svg>

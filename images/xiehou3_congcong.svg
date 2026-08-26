@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="night3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c2b33"/>
+      <stop offset="1" stop-color="#0d161a"/>
+    </linearGradient>
+    <radialGradient id="moon3" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fdf3d0"/>
+      <stop offset=".7" stop-color="#f5e2a8"/>
+      <stop offset="1" stop-color="#f5e2a8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="b6c"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <rect width="800" height="500" fill="url(#night3)"/>
+  <!-- 月暈 -->
+  <circle cx="590" cy="150" r="120" fill="url(#moon3)" opacity=".5"/>
+  <circle cx="590" cy="150" r="66" fill="#f7ead0"/>
+  <circle cx="566" cy="132" r="10" fill="#eadcb4" opacity=".8"/>
+  <circle cx="610" cy="168" r="7" fill="#eadcb4" opacity=".8"/>
+  <!-- 疏雲 -->
+  <g filter="url(#b6c)" fill="#22333b" opacity=".85">
+    <ellipse cx="470" cy="120" rx="80" ry="16"/>
+    <ellipse cx="680" cy="90" rx="70" ry="14"/>
+    <ellipse cx="120" cy="200" rx="90" ry="18"/>
+  </g>
+  <!-- 遠山/屋舍剪影 -->
+  <path d="M0 400 C140 360 240 380 360 372 C520 360 640 384 800 372 L800 500 L0 500 Z" fill="#10191d"/>
+  <path d="M120 400 l40 -34 l40 34 Z" fill="#0c1417"/>
+  <path d="M300 398 l34 -28 l34 28 Z" fill="#0c1417"/>
+  <!-- 江上孤舟/獨影 -->
+  <rect x="180" y="430" width="90" height="6" rx="3" fill="#1a2b31"/>
+  <path d="M225 430 C225 408 224 398 224 392" stroke="#22333b" stroke-width="4" fill="none"/>
+  <circle cx="224" cy="386" r="7" fill="#22333b"/>
+  <!-- 水面月光倒影 -->
+  <g stroke="#e8d39a" opacity=".4" stroke-linecap="round">
+    <line x1="560" y1="380" x2="620" y2="380" stroke-width="4"/>
+    <line x1="548" y1="396" x2="634" y2="396" stroke-width="3"/>
+    <line x1="566" y1="412" x2="612" y2="412" stroke-width="3"/>
+    <line x1="556" y1="428" x2="624" y2="428" stroke-width="2"/>
+  </g>
+</svg>

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3ead9"/>
+      <stop offset="1" stop-color="#e4d5ba"/>
+    </linearGradient>
+    <linearGradient id="m1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f4a47"/>
+      <stop offset="1" stop-color="#3c5a55"/>
+    </linearGradient>
+    <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a544b"/>
+      <stop offset="1" stop-color="#7a7363"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#sky)"/>
+
+  <!-- 月 -->
+  <circle cx="640" cy="110" r="52" fill="#f7f1e3" opacity="0.9"/>
+  <circle cx="640" cy="110" r="52" fill="none" stroke="#a9854f" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- 遠山 -->
+  <path d="M0 300 Q120 210 240 270 T520 250 Q640 215 800 285 L800 500 L0 500 Z" fill="url(#m2)" opacity="0.55"/>
+  <!-- 近山 -->
+  <path d="M0 360 Q150 280 300 340 T560 320 Q700 285 800 350 L800 500 L0 500 Z" fill="url(#m1)" opacity="0.85"/>
+
+  <!-- 水紋 -->
+  <g stroke="#2f4a47" stroke-width="1.4" fill="none" opacity="0.35">
+    <path d="M80 430 q40 -14 80 0 t80 0 t80 0"/>
+    <path d="M360 452 q40 -14 80 0 t80 0 t80 0"/>
+    <path d="M150 468 q40 -12 80 0 t80 0"/>
+  </g>
+
+  <!-- 小舟 -->
+  <g stroke="#2a2723" stroke-width="2" fill="none">
+    <path d="M470 418 q34 22 68 0"/>
+    <line x1="504" y1="418" x2="504" y2="392"/>
+    <path d="M504 396 q22 8 0 20"/>
+  </g>
+
+  <!-- 竹 -->
+  <g stroke="#2f4a47" stroke-width="3" fill="none" opacity="0.8">
+    <path d="M120 500 L120 300"/>
+    <path d="M140 500 L140 330"/>
+    <path d="M120 320 q26 -10 40 -2"/>
+    <path d="M140 350 q-26 -8 -40 0"/>
+  </g>
+
+  <!-- 印 -->
+  <rect x="60" y="60" width="46" height="46" rx="4" fill="none" stroke="#b23a2e" stroke-width="3"/>
+  <text x="83" y="92" font-family="Kaiti SC, STKaiti, serif" font-size="28" fill="#b23a2e" text-anchor="middle">山</text>
+</svg>

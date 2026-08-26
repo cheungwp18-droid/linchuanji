@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="wall2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6e9cf"/>
+      <stop offset="1" stop-color="#ecd8b4"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#wall2)"/>
+  <!-- 窗光 -->
+  <rect x="70" y="60" width="260" height="240" rx="6" fill="#fff3d2" opacity=".7"/>
+  <g stroke="#e0c98f" stroke-width="6" opacity=".8">
+    <line x1="200" y1="60" x2="200" y2="300"/>
+    <line x1="70" y1="180" x2="330" y2="180"/>
+  </g>
+  <rect x="70" y="60" width="260" height="240" rx="6" fill="none" stroke="#d9bd84" stroke-width="8"/>
+  <!-- 桌 -->
+  <rect x="0" y="360" width="800" height="140" fill="#caa06a"/>
+  <rect x="0" y="360" width="800" height="16" fill="#b78b52"/>
+  <!-- 單枝紅玫瑰（玻璃瓶） -->
+  <g>
+    <rect x="560" y="300" width="34" height="62" rx="8" fill="#cfe0dd" opacity=".85"/>
+    <path d="M577 300 C577 262 575 246 575 236" stroke="#5c6e5a" stroke-width="4" fill="none"/>
+    <path d="M575 250 q-18 -8 -26 4 q18 8 26 -4 Z" fill="#6b7f68"/>
+    <g fill="#b23a2e">
+      <circle cx="575" cy="224" r="20"/>
+      <circle cx="560" cy="216" r="12"/>
+      <circle cx="590" cy="216" r="12"/>
+      <circle cx="575" cy="206" r="12"/>
+      <circle cx="566" cy="232" r="11"/>
+      <circle cx="584" cy="232" r="11"/>
+    </g>
+    <circle cx="575" cy="222" r="7" fill="#8f2a22"/>
+  </g>
+  <!-- 兩杯咖啡 -->
+  <g>
+    <ellipse cx="250" cy="366" rx="42" ry="10" fill="#8a6a45"/>
+    <path d="M216 320 h68 v34 a10 10 0 0 1 -10 10 h-48 a10 10 0 0 1 -10 -10 Z" fill="#f3ead9"/>
+    <path d="M284 326 q22 4 0 24" stroke="#d9c39a" stroke-width="5" fill="none"/>
+    <ellipse cx="250" cy="320" rx="34" ry="7" fill="#6b4a2f"/>
+  </g>
+  <g>
+    <ellipse cx="410" cy="372" rx="40" ry="10" fill="#8a6a45"/>
+    <path d="M378 330 h64 v30 a10 10 0 0 1 -10 10 h-44 a10 10 0 0 1 -10 -10 Z" fill="#e7dcc3"/>
+    <ellipse cx="410" cy="330" rx="32" ry="7" fill="#5b3d27"/>
+  </g>
+</svg>

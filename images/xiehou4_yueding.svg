@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="night4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#17242b"/>
+      <stop offset="1" stop-color="#0a1114"/>
+    </linearGradient>
+    <filter id="b14d"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="b5d"><feGaussianBlur stdDeviation="5"/></filter>
+  </defs>
+  <rect width="800" height="500" fill="url(#night4)"/>
+  <!-- 城市散景 -->
+  <g filter="url(#b14d)" opacity=".5">
+    <circle cx="110" cy="120" r="30" fill="#e8b04b"/>
+    <circle cx="700" cy="90" r="26" fill="#b23a2e"/>
+    <circle cx="640" cy="330" r="34" fill="#e8b04b"/>
+    <circle cx="150" cy="350" r="24" fill="#d98a3d"/>
+  </g>
+  <!-- 星 -->
+  <g fill="#f3ead9" opacity=".7">
+    <circle cx="300" cy="80" r="2"/>
+    <circle cx="420" cy="60" r="1.6"/>
+    <circle cx="540" cy="110" r="2"/>
+    <circle cx="200" cy="180" r="1.6"/>
+    <circle cx="620" cy="180" r="1.8"/>
+  </g>
+  <!-- 發光訊息氣泡（手機屏幕） -->
+  <g>
+    <rect x="150" y="150" width="500" height="200" rx="18" fill="#0f1a1f" stroke="#22333b" stroke-width="3"/>
+    <!-- 對方氣泡 -->
+    <rect x="180" y="180" width="240" height="54" rx="16" fill="#22333b"/>
+    <g stroke="#8fa3ab" stroke-width="6" stroke-linecap="round" opacity=".7">
+      <line x1="200" y1="200" x2="360" y2="200"/>
+      <line x1="200" y1="218" x2="320" y2="218"/>
+    </g>
+    <!-- 自己氣泡（發光） -->
+    <rect x="380" y="252" width="240" height="64" rx="16" fill="#f3ead9"/>
+    <rect x="380" y="252" width="240" height="64" rx="16" fill="none" stroke="#fff6df" stroke-width="3" opacity=".8" filter="url(#b5d)"/>
+    <g stroke="#2a2723" stroke-width="6" stroke-linecap="round" opacity=".85">
+      <line x1="402" y1="276" x2="596" y2="276"/>
+      <line x1="402" y1="296" x2="540" y2="296"/>
+    </g>
+  </g>
+  <!-- 底部微光 -->
+  <ellipse cx="400" cy="440" rx="260" ry="24" fill="#e8b04b" opacity=".08"/>
+</svg>

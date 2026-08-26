@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>诗词 · 林川集</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="brand" href="index.html"><span class="seal-mark">集</span>林川集</a>
+  <ul>
+    <li><a class="link" href="index.html">首頁</a></li>
+    <li><a class="link" href="wenji.html">文集</a></li>
+    <li><a class="link" href="shici.html">詩詞</a></li>
+    <li><a class="link" href="wencui.html">文粹採集</a></li>
+    <li><a class="link" href="zawen.html">雜文</a></li>
+    <li><a class="link" href="chuangzuo.html">創作</a></li>
+    <li><a class="link" href="about.html">自述</a></li>
+  </ul>
+  <button class="nav-search" id="navSearch" aria-label="全站搜尋">🔍 搜尋</button>
+</nav>
+
+<section class="section wrap">
+  <div class="heading">詩詞 <span class="en">Verse</span></div>
+  <p style="color:var(--ink-soft);max-width:34rem;margin-bottom:2.4rem">七絕、五律、小令——豎排以存古意。點擊詩箋，可讀原玉與淺註。</p>
+  <div class="poem-grid" id="poemGrid"></div>
+</section>
+
+<footer class="footer">
+  <div class="f-brand">林 川 集</div>
+  <div class="f-lines">掬水月在手 · 弄花香满衣</div>
+  <div class="f-copy">© 林川 · 一瓢江湖，半卷清風 · 古風林川輯錄</div>
+</footer>
+
+<div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
+
+<!-- 全站搜尋 -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-panel">
+    <button class="search-close" id="searchClose" aria-label="關閉">×</button>
+    <div class="search-bar">
+      <span class="search-ico">🔍</span>
+      <input class="search-input" id="searchInput" type="text" placeholder="搜尋文集、詩詞、文粹採集…（標題與正文）" autocomplete="off">
+    </div>
+    <div class="search-meta" id="searchMeta"></div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

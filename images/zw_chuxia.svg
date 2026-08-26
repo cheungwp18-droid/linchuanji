@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="csky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef3e6"/>
+      <stop offset="1" stop-color="#dbe7d2"/>
+    </linearGradient>
+    <linearGradient id="ch1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8aa584"/><stop offset="1" stop-color="#8aa584" stop-opacity=".4"/></linearGradient>
+    <linearGradient id="ch2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5c7a5e"/><stop offset="1" stop-color="#5c7a5e" stop-opacity=".5"/></linearGradient>
+    <linearGradient id="ch3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#33504a"/><stop offset="1" stop-color="#33504a" stop-opacity=".7"/></linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#csky)"/>
+  <circle cx="620" cy="110" r="46" fill="#f2c969" opacity=".7"/>
+  <circle cx="620" cy="110" r="30" fill="#f6d98a"/>
+  <!-- 層疊青山 -->
+  <path d="M0 300 C150 250 260 210 430 250 C600 290 700 235 800 265 L800 500 L0 500 Z" fill="url(#ch1)"/>
+  <path d="M0 350 C170 310 300 265 480 300 C640 330 720 295 800 315 L800 500 L0 500 Z" fill="url(#ch2)"/>
+  <path d="M0 400 C200 370 340 340 540 372 C660 392 740 372 800 384 L800 500 L0 500 Z" fill="url(#ch3)"/>
+  <!-- 飛鳥 -->
+  <g stroke="#33504a" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8">
+    <path d="M180 130 q14 -14 28 0 q14 -14 28 0"/>
+    <path d="M250 100 q11 -11 22 0 q11 -11 22 0"/>
+  </g>
+  <!-- 洋紫荊花枝 -->
+  <g>
+    <path d="M120 500 C140 400 150 340 175 280" stroke="#4a5c46" stroke-width="6" fill="none"/>
+    <path d="M150 380 q-30 -14 -46 6" stroke="#4a5c46" stroke-width="4" fill="none"/>
+    <g fill="#c97b93">
+      <circle cx="182" cy="272" r="16"/><circle cx="166" cy="262" r="12"/><circle cx="198" cy="262" r="12"/><circle cx="182" cy="252" r="12"/>
+      <circle cx="128" cy="382" r="13"/><circle cx="114" cy="374" r="9"/><circle cx="142" cy="374" r="9"/>
+      <circle cx="120" cy="430" r="12"/><circle cx="106" cy="424" r="8"/><circle cx="134" cy="424" r="8"/>
+    </g>
+    <g fill="#a85a72">
+      <circle cx="182" cy="268" r="6"/><circle cx="128" cy="379" r="5"/><circle cx="120" cy="427" r="5"/>
+    </g>
+  </g>
+  <!-- 修竹 -->
+  <g stroke="#3f5a4c" stroke-width="5" stroke-linecap="round" fill="none">
+    <path d="M690 500 C688 420 692 360 686 300"/>
+    <path d="M716 500 C714 430 718 380 714 320"/>
+  </g>
+  <g fill="#5c7a5e">
+    <path d="M686 320 q-26 -12 -44 2 q26 12 44 -2 Z"/>
+    <path d="M690 372 q24 -14 42 -2 q-24 14 -42 2 Z"/>
+    <path d="M714 340 q22 -12 38 0 q-22 12 -38 0 Z"/>
+  </g>
+</svg>
