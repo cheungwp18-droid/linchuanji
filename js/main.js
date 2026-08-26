@@ -1080,7 +1080,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ov.classList.add("open");
       input.value = "";
       meta.textContent = "";
-      results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文學經典、文言文精讀教學、遊玩區間遍搜。</div>`;
+      results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文學經典、名篇精讀教學、遊玩區間遍搜。</div>`;
       setTimeout(() => input.focus(), 30);
     }
     function closeSearch() { ov.classList.remove("open"); }
@@ -1105,7 +1105,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const q = input.value.trim();
       if (!q) {
         meta.textContent = "";
-        results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文學經典、雜文、文言文精讀教學、遊玩區間遍搜。</div>`;
+        results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文學經典、雜文、名篇精讀教學、遊玩區間遍搜。</div>`;
         return;
       }
       const ql = q.toLowerCase();
@@ -1138,7 +1138,7 @@ document.addEventListener("DOMContentLoaded", () => {
       (WENYAN_ITEMS || []).forEach(x => {
         const text = [x.title, x.author, x.tag].join(" ");
         if (text.toLowerCase().includes(ql) || text.includes(q))
-          out.push({ kind: "wenyan", id: x.id, title: x.title, text: x.author + " · " + x.title, tag: "文言文精讀教學 · " + x.tag });
+          out.push({ kind: "wenyan", id: x.id, title: x.title, text: x.author + " · " + x.title, tag: "名篇精讀教學 · " + x.tag });
       });
       (YOUWAN_ITEMS || []).forEach(x => {
         const text = [x.name, x.class, x.faction, x.camp, x.origin, x.weapon, x.wskill, x.wdesc, x.extra, x.extraDesc, x.bio,
@@ -1153,7 +1153,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       results.innerHTML = out.map(r => {
-        const label = r.kind === "essay" ? "文集" : r.kind === "poem" ? "詩詞" : r.kind === "wencui" ? "文學經典" : r.kind === "chuangzuo" ? "創作" : r.kind === "youwan" ? "遊玩" : r.kind === "wenyan" ? "文言文精讀教學" : "雜文";
+        const label = r.kind === "essay" ? "文集" : r.kind === "poem" ? "詩詞" : r.kind === "wencui" ? "文學經典" : r.kind === "chuangzuo" ? "創作" : r.kind === "youwan" ? "遊玩" : r.kind === "wenyan" ? "名篇精讀教學" : "雜文";
         return `<button class="search-result" data-kind="${r.kind}" data-id="${esc(r.id)}">
           <span class="sr-kind">${label}</span>
           <span class="sr-title">${esc(r.title)}</span>
