@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (filters.cls && g.class !== filters.cls) return false;
       if (!q) return true;
       const hay = [
-        g.name, g.class, g.faction, g.camp, g.origin, g.weapon, g.wskill, g.wdesc, g.extra, g.extraDesc,
+        g.name, g.class, g.faction, g.camp, g.origin, g.weapon, g.wskill, g.wdesc, g.extra, g.extraDesc, g.bio,
         ...(g.skills || []), ...(g.descs || []), ...(g.alias || []), ...(g.missing || [])
       ].join(" ").toLowerCase();
       return hay.includes(q);
@@ -300,6 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <h2>${esc(g.name)}</h2>
         </div>
       </div>
+      ${g.bio ? `<p class="yw-bio">${esc(g.bio)}</p>` : ""}
       <div class="yw-skill-list">${skills}</div>
       <dl class="yw-kv">
         <div class="yw-dl"><dt>專武</dt><dd>${esc(g.weapon || "未錄")}</dd></div>
@@ -354,6 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ["技能", skHTML],
       ["專武", g => esc(g.weapon || "未錄")],
       ["武技", g => g.wskill ? `<div class="yw-sk"><b>${esc(g.wskill)}</b>${g.wdesc ? `<span>${esc(g.wdesc)}</span>` : ""}</div>` : "未錄"],
+      ["小傳", g => g.bio ? `<div class="yw-sk"><span>${esc(g.bio)}</span></div>` : "—"],
       ["表外招", g => g.extra ? `<div class="yw-sk"><b>${esc(g.extra)}</b>${g.extraDesc ? `<span>${esc(g.extraDesc)}</span>` : ""}</div>` : "—"],
       ["缺欄", g => esc((g.missing || []).join("、") || "無")]
     ];
@@ -484,7 +486,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const sk = skillPairs(ans).map(p => esc(p.name) + (p.desc ? `（${esc(p.desc)}）` : "")).join("；");
     if (fb) fb.innerHTML = (ok
       ? `正。${esc(ans.name)} · ${esc(ans.faction)}${ans.class ? " · " + esc(ans.class) : ""}`
-      : `誤。正解為「${esc(right)}」。`) + (sk ? `<div class="yw-mini">${sk}</div>` : "");
+      : `誤。正解為「${esc(right)}」。`)
+      + (ans.bio ? `<div class="yw-mini">${esc(ans.bio)}</div>` : "")
+      + (sk ? `<div class="yw-mini">${sk}</div>` : "");
     const next = $("#ywNext", trialBox);
     if (next) next.disabled = false;
     const peek = $("#ywPeek", trialBox);

@@ -1091,7 +1091,7 @@ document.addEventListener("DOMContentLoaded", () => {
           out.push({ kind: "chuangzuo", id: x.id, title: x.title, text: (x.body || []).join(" "), tag: x.season || "創作" });
       });
       (YOUWAN_ITEMS || []).forEach(x => {
-        const text = [x.name, x.class, x.faction, x.camp, x.origin, x.weapon, x.wskill, x.wdesc, x.extra, x.extraDesc,
+        const text = [x.name, x.class, x.faction, x.camp, x.origin, x.weapon, x.wskill, x.wdesc, x.extra, x.extraDesc, x.bio,
           ...(x.skills || []), ...(x.descs || []), ...(x.alias || [])].filter(Boolean).join(" ");
         if (text.toLowerCase().includes(ql))
           out.push({ kind: "youwan", id: x.id, title: x.name, text: text, tag: (x.faction || "遊玩") + (x.class ? " · " + x.class : "") });
