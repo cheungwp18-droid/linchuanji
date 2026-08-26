@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveCompare = () => sessionStorage.setItem("yw_compare", JSON.stringify(compareIds));
   const tone = g => FACTION_TONE[g.faction] || "gunki";
   const levelText = g => (g.faction === "神將" ? "神" : (g.level != null ? String(g.level) : "—"));
+  const skillPairs = g => (g.skills || []).map((n, i) => ({ name: n, desc: (g.descs || [])[i] || "" }));
 
   function filtered() {
     const q = filters.q.trim().toLowerCase();
@@ -54,8 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (filters.cls && g.class !== filters.cls) return false;
       if (!q) return true;
       const hay = [
-        g.name, g.class, g.faction, g.camp, g.origin, g.weapon, g.wskill, g.extra,
-        ...(g.skills || []), ...(g.alias || []), ...(g.missing || [])
+        g.name, g.class, g.faction, g.camp, g.origin, g.weapon, g.wskill, g.wdesc, g.extra, g.extraDesc,
+        ...(g.skills || []), ...(g.descs || []), ...(g.alias || []), ...(g.missing || [])
       ].join(" ").toLowerCase();
       return hay.includes(q);
     });
@@ -227,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function cardHTML(g) {
     const on = compareIds.includes(g.id) ? " on" : "";
     const miss = g.missing && g.missing.length ? `<span class="yw-miss">未錄</span>` : "";
-    const extra = g.extra ? `<span class="yw-extra-dot" title="${esc(g.extra)}">招</span>` : "";
+    const extra = g.extra ? `<span class="yw-extra-dot" title="${esc(g.extraDesc || g.extra)}">招</span>` : "";
     const origin = g.origin ? `<span class="yw-origin">${esc(g.origin)}</span>` : "";
     return `<article class="yw-card f-${tone(g)}" data-id="${esc(g.id)}" tabindex="0">
       <button type="button" class="yw-cmp${on}" data-act="cmp" title="加入對照" aria-label="加入對照">對</button>
@@ -263,14 +264,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (writeHash && (location.hash || "").replace(/^#/, "") !== g.id) {
       history.replaceState(null, "", "#" + g.id);
     }
-    const skills = (g.skills || []).length
-      ? g.skills.map(s => `<span class="yw-pill">${esc(s)}</span>`).join("")
+    const pairs = skillPairs(g);
+    const skills = pairs.length
+      ? pairs.map(p => `<div class="yw-skill"><span class="yw-pill"${p.desc ? ` title="${esc(p.desc)}"` : ""}>${esc(p.name)}</span>${p.desc ? `<p>${esc(p.desc)}</p>` : `<p class="dim">說明未錄</p>`}</div>`).join("")
       : `<span class="yw-pill dim">主動技未錄</span>`;
     const miss = (g.missing || []).map(m => `<span class="yw-tag">${esc(m)}</span>`).join("");
     const alias = (g.alias || []).length
       ? `<div class="yw-dl"><dt>原表</dt><dd>${g.alias.map(esc).join("、")}</dd></div>` : "";
-    const extra = g.extra ? `<div class="yw-dl"><dt>表外招</dt><dd>${esc(g.extra)}</dd></div>` : "";
+    const extra = g.extra ? `<div class="yw-dl"><dt>表外招</dt><dd>${esc(g.extra)}${g.extraDesc ? `<div class="yw-mini">${esc(g.extraDesc)}</div>` : ""}</dd></div>` : "";
     const origin = g.origin ? `<div class="yw-dl"><dt>本籍</dt><dd>${esc(g.origin)}</dd></div>` : "";
+    const wline = `${esc(g.wskill || "未錄")}${g.wdesc ? `<div class="yw-mini">${esc(g.wdesc)}</div>` : ""}`;
     sheet.innerHTML = `
       <button class="close" type="button" aria-label="關閉">×</button>
       <div class="s-meta">
@@ -279,10 +282,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <span>·</span><span>Lv.${esc(levelText(g))}</span>
       </div>
       <h2>${esc(g.name)}</h2>
-      <div class="yw-pills">${skills}</div>
+      <div class="yw-skill-list">${skills}</div>
       <dl class="yw-kv">
         <div class="yw-dl"><dt>專武</dt><dd>${esc(g.weapon || "未錄")}</dd></div>
-        <div class="yw-dl"><dt>武技</dt><dd>${esc(g.wskill || "未錄")}</dd></div>
+        <div class="yw-dl"><dt>武技</dt><dd>${wline}</dd></div>
         ${origin}${extra}${alias}
       </dl>
       ${miss ? `<div class="yw-missing">${miss}</div>` : ""}
@@ -320,22 +323,27 @@ document.addEventListener("DOMContentLoaded", () => {
         <p class="yw-hint"><a href="#atlas">返回圖鑑</a></p>`;
       return;
     }
+    const skHTML = g => {
+      const pairs = skillPairs(g);
+      if (!pairs.length) return "未錄";
+      return pairs.map(p => `<div class="yw-sk"><b>${esc(p.name)}</b>${p.desc ? `<span>${esc(p.desc)}</span>` : ""}</div>`).join("");
+    };
     const rows = [
-      ["陣營", g => g.camp],
-      ["隸屬", g => g.faction + (g.origin ? `（${g.origin}）` : "")],
-      ["兵種", g => g.class],
-      ["等級", g => levelText(g)],
-      ["技能", g => (g.skills || []).join("、") || "未錄"],
-      ["專武", g => g.weapon || "未錄"],
-      ["武技", g => g.wskill || "未錄"],
-      ["表外招", g => g.extra || "—"],
-      ["缺欄", g => (g.missing || []).join("、") || "無"]
+      ["陣營", g => esc(g.camp)],
+      ["隸屬", g => esc(g.faction + (g.origin ? `（${g.origin}）` : ""))],
+      ["兵種", g => esc(g.class)],
+      ["等級", g => esc(levelText(g))],
+      ["技能", skHTML],
+      ["專武", g => esc(g.weapon || "未錄")],
+      ["武技", g => g.wskill ? `<div class="yw-sk"><b>${esc(g.wskill)}</b>${g.wdesc ? `<span>${esc(g.wdesc)}</span>` : ""}</div>` : "未錄"],
+      ["表外招", g => g.extra ? `<div class="yw-sk"><b>${esc(g.extra)}</b>${g.extraDesc ? `<span>${esc(g.extraDesc)}</span>` : ""}</div>` : "—"],
+      ["缺欄", g => esc((g.missing || []).join("、") || "無")]
     ];
     const head = `<tr><th></th>${gens.map(g =>
       `<th><button type="button" class="yw-unlink" data-id="${esc(g.id)}" title="移出">×</button><a href="#${esc(g.id)}">${esc(g.name)}</a></th>`
     ).join("")}</tr>`;
     const body = rows.map(([lab, fn]) =>
-      `<tr><th>${esc(lab)}</th>${gens.map(g => `<td>${esc(fn(g))}</td>`).join("")}</tr>`
+      `<tr><th>${esc(lab)}</th>${gens.map(g => `<td>${fn(g)}</td>`).join("")}</tr>`
     ).join("");
     compareBox.innerHTML = `
       <div class="yw-table-wrap"><table class="yw-table">${head}${body}</table></div>
@@ -454,9 +462,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     const fb = $("#ywFb", trialBox);
     const right = q.choices.find(c => c.ok).label;
-    if (fb) fb.innerHTML = ok
-      ? `正。${esc(q.answer.name)} · ${esc(q.answer.faction)}${q.answer.class ? " · " + esc(q.answer.class) : ""}`
-      : `誤。正解為「${esc(right)}」。`;
+    const ans = q.answer;
+    const sk = skillPairs(ans).map(p => esc(p.name) + (p.desc ? `（${esc(p.desc)}）` : "")).join("；");
+    if (fb) fb.innerHTML = (ok
+      ? `正。${esc(ans.name)} · ${esc(ans.faction)}${ans.class ? " · " + esc(ans.class) : ""}`
+      : `誤。正解為「${esc(right)}」。`) + (sk ? `<div class="yw-mini">${sk}</div>` : "");
     const next = $("#ywNext", trialBox);
     if (next) next.disabled = false;
     const peek = $("#ywPeek", trialBox);

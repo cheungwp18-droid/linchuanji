@@ -1201,3 +1201,12 @@ body.editing .add-tile, body.author .add-tile { display: flex; }
   .yw-banner { align-items: flex-start; }
   .yw-card h3 { font-size: 1.3rem; }
 }
+
+.yw-skill-list { display: flex; flex-direction: column; gap: .65rem; margin: .3rem 0 1.2rem; }
+.yw-skill p { color: var(--ink-soft); font-size: .92rem; margin: .2rem 0 0 .1rem; line-height: 1.65; text-indent: 0; }
+.yw-skill p.dim { color: var(--ink-faint); font-style: italic; }
+.yw-mini { color: var(--ink-soft); font-size: .9rem; margin-top: .25rem; line-height: 1.6; }
+.yw-sk { margin-bottom: .45rem; }
+.yw-sk:last-child { margin-bottom: 0; }
+.yw-sk b { display: block; font-family: var(--kai); font-weight: 500; color: var(--ink); }
+.yw-sk span { display: block; color: var(--ink-soft); font-size: .86rem; line-height: 1.55; }
