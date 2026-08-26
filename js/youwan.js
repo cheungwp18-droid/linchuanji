@@ -58,6 +58,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const t = sealText(g.name);
     return `<div class="yw-ava ${cls || ""} f-${tone(g)} n${t.length}" aria-hidden="true"><span>${esc(t)}</span></div>`;
   }
+  function figureHTML(g, cls) {
+    const t = sealText(g.name);
+    const seal = `<div class="yw-ava sm f-${tone(g)} n${t.length}" aria-hidden="true"><span>${esc(t)}</span></div>`;
+    if (g.fullbody) {
+      return `<div class="yw-figure ${cls || ""} f-${tone(g)}"><img src="${esc(g.fullbody)}" alt="${esc(g.name)}" loading="lazy" decoding="async">${seal}</div>`;
+    }
+    return avaHTML(g, cls);
+  }
 
   function filtered() {
     const q = filters.q.trim().toLowerCase();
@@ -244,7 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const origin = g.origin ? `<span class="yw-origin">${esc(g.origin)}</span>` : "";
     return `<article class="yw-card f-${tone(g)}" data-id="${esc(g.id)}" tabindex="0">
       <button type="button" class="yw-cmp${on}" data-act="cmp" title="加入對照" aria-label="加入對照">對</button>
-      ${avaHTML(g)}
+      ${figureHTML(g)}
       <div class="yw-card-meta"><span>Lv.${esc(levelText(g))}</span><span class="dot"></span><span>${esc(g.class)}</span>${origin}${miss}${extra}</div>
       <h3>${esc(g.name)}</h3>
       <p class="yw-card-sk">${esc((g.skills || []).slice(0, 4).join(" · ") || "主動技未錄")}</p>
@@ -295,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span>·</span><span>Lv.${esc(levelText(g))}</span>
       </div>
       <div class="yw-detail-head">
-        ${avaHTML(g, "lg")}
+        ${figureHTML(g, "lg")}
         <div>
           <h2>${esc(g.name)}</h2>
         </div>
