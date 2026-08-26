@@ -1196,6 +1196,22 @@ body.editing .add-tile, body.author .add-tile { display: flex; }
 }
 .yw-banner h3 { font-family: var(--kai); font-size: 1.45rem; margin-bottom: .25rem; }
 .yw-banner p { color: var(--ink-soft); font-size: .98rem; }
+
+.wy-lead { color: var(--ink-soft); font-size: 1.02rem; line-height: 1.85; max-width: 40rem; margin: -.4rem 0 1rem; }
+.wy-head { padding-bottom: .4rem; }
+.wy-frame {
+  width: 100%;
+  border-top: 1px solid var(--line);
+  background: #f3ead4;
+}
+.wy-frame iframe {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 8.5rem);
+  min-height: 32rem;
+  border: 0;
+}
+.wy-banner .yw-seal { background: #8e2416; }
 @media (max-width: 600px) {
   .yw-choices { grid-template-columns: 1fr; }
   .yw-banner { align-items: flex-start; }

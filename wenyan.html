@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>雜文 · 林川集</title>
+<title>文言精讀 · 林川集</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
@@ -20,18 +20,21 @@
     <li><a class="link" href="wencui.html">文粹採集</a></li>
     <li><a class="link" href="zawen.html">雜文</a></li>
     <li><a class="link" href="chuangzuo.html">創作</a></li>
-    <li><a class="link" href="wenyan.html">文言</a></li>
+    <li><a class="link active" href="wenyan.html">文言</a></li>
     <li><a class="link" href="youwan.html">遊玩區</a></li>
     <li><a class="link" href="about.html">自述</a></li>
   </ul>
   <button class="nav-search" id="navSearch" aria-label="全站搜尋">🔍 搜尋</button>
 </nav>
 
-<section class="section wrap">
-  <div class="heading">雜文 <span class="en">Miscellany</span></div>
-  <p style="color:var(--ink-soft);max-width:34rem;margin-bottom:2.4rem">茶餘偶筆、讀書隨札、街巷閒觀——不為章法所拘，但記一時之感。點擊篇目，展卷而讀。</p>
-  <div class="grid" id="zawenGrid"></div>
+<section class="section wrap wy-head">
+  <div class="heading">文言精讀 <span class="en">Classical Chinese</span></div>
+  <p class="wy-lead">四十講精讀：國語拼音、粵拼、逐句今譯。卡通課堂可帶讀、解說、提問，國語／粵語可切。</p>
 </section>
+
+<div class="wy-frame">
+  <iframe id="wyFrame" src="wenyan/index.html" title="文言四十講"></iframe>
+</div>
 
 <footer class="footer">
   <div class="f-brand">林 川 集</div>
@@ -40,8 +43,6 @@
 </footer>
 
 <div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
-
-<!-- 全站搜尋 -->
 <div class="search-overlay" id="searchOverlay">
   <div class="search-panel">
     <button class="search-close" id="searchClose" aria-label="關閉">×</button>
@@ -55,5 +56,16 @@
 </div>
 
 <script src="js/main.js"></script>
+<script>
+(function () {
+  var frame = document.getElementById("wyFrame");
+  function applyHash() {
+    var h = location.hash.replace(/^#/, "");
+    frame.src = h ? ("wenyan/index.html#" + h) : "wenyan/index.html";
+  }
+  if (location.hash) applyHash();
+  window.addEventListener("hashchange", applyHash);
+})();
+</script>
 </body>
 </html>

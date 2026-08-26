@@ -1035,6 +1035,37 @@ document.addEventListener("DOMContentLoaded", () => {
     YOUWAN_ITEMS = d.items || [];
   }).catch(() => {});
 
+  const WENYAN_ITEMS = [
+    {id:"zuiwengtingji", title:"醉翁亭記", author:"歐陽修", tag:"記"},
+    {id:"shishuo", title:"師說", author:"韓愈", tag:"說"},
+    {id:"afanggongfu", title:"阿房宮賦", author:"杜牧", tag:"賦"},
+    {id:"chibifu", title:"赤壁賦", author:"蘇軾", tag:"賦"},
+    {id:"taohuayuanji", title:"桃花源記", author:"陶淵明", tag:"記"},
+    {id:"yueyanglouji", title:"岳陽樓記", author:"范仲淹", tag:"記"},
+    {id:"loushiming", title:"陋室銘", author:"劉禹錫", tag:"銘"},
+    {id:"chushibiao", title:"出師表", author:"諸葛亮", tag:"表"},
+    {id:"guoqinlun", title:"過秦論", author:"賈誼", tag:"論"},
+    {id:"caoguilunzhan", title:"曹劌論戰", author:"左丘明", tag:"記"},
+    {id:"zoujifengqiwang", title:"鄒忌諷齊王納諫", author:"戰國策", tag:"記"},
+    {id:"tangju", title:"唐雎不辱使命", author:"戰國策", tag:"記"},
+    {id:"zhengboke", title:"鄭伯克段於鄢", author:"左丘明", tag:"記"},
+    {id:"pengdanglun", title:"朋黨論", author:"歐陽修", tag:"論"},
+    {id:"jianzhukeshu", title:"諫逐客書", author:"李斯", tag:"書"},
+    {id:"ziyu", title:"子魚論戰", author:"左丘明", tag:"記"},
+    {id:"bushezheshuo", title:"捕蛇者說", author:"柳宗元", tag:"說"},
+    {id:"tengwanggexu", title:"滕王閣序", author:"王勃", tag:"序"},
+    {id:"zhuzhiwu", title:"燭之武退秦師", author:"左丘明", tag:"記"},
+    {id:"liuguolun", title:"六國論", author:"蘇洵", tag:"論"},
+    {id:"wuliuxiansheng", title:"五柳先生傳", author:"陶淵明", tag:"傳"},
+    {id:"lantingjixu", title:"蘭亭集序", author:"王羲之", tag:"序"},
+    {id:"youbaochanshanji", title:"遊褒禪山記", author:"王安石", tag:"記"},
+    {id:"chenqingbiao", title:"陳情表", author:"李密", tag:"表"},
+    {id:"baorenanshu", title:"報任安書", author:"司馬遷", tag:"書"},
+    {id:"yuxishixu", title:"愚溪詩序", author:"柳宗元", tag:"序"},
+    {id:"canglangtingji", title:"滄浪亭記", author:"蘇舜欽", tag:"記"},
+    {id:"zunjinggeji", title:"尊經閣記", author:"王守仁", tag:"記"}
+  ];
+
   /* ---------- 全站搜尋 ---------- */
   function wireSearch() {
     const btn = document.getElementById("navSearch");
@@ -1049,7 +1080,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ov.classList.add("open");
       input.value = "";
       meta.textContent = "";
-      results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文粹、遊玩區間遍搜。</div>`;
+      results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文粹、文言、遊玩區間遍搜。</div>`;
       setTimeout(() => input.focus(), 30);
     }
     function closeSearch() { ov.classList.remove("open"); }
@@ -1074,7 +1105,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const q = input.value.trim();
       if (!q) {
         meta.textContent = "";
-        results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文粹、雜文、遊玩區間遍搜。</div>`;
+        results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文粹、雜文、文言、遊玩區間遍搜。</div>`;
         return;
       }
       const ql = q.toLowerCase();
@@ -1104,6 +1135,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if ([x.title, x.excerpt, x.author, x.season, x.seal, (x.body || []).join(" ")].join(" ").toLowerCase().includes(ql))
           out.push({ kind: "chuangzuo", id: x.id, title: x.title, text: (x.body || []).join(" "), tag: x.season || "創作" });
       });
+      (WENYAN_ITEMS || []).forEach(x => {
+        const text = [x.title, x.author, x.tag].join(" ");
+        if (text.toLowerCase().includes(ql) || text.includes(q))
+          out.push({ kind: "wenyan", id: x.id, title: x.title, text: x.author + " · " + x.title, tag: "文言 · " + x.tag });
+      });
       (YOUWAN_ITEMS || []).forEach(x => {
         const text = [x.name, x.class, x.faction, x.camp, x.origin, x.weapon, x.wskill, x.wdesc, x.extra, x.extraDesc, x.bio,
           ...(x.skills || []), ...(x.descs || []), ...(x.alias || [])].filter(Boolean).join(" ");
@@ -1117,7 +1153,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       results.innerHTML = out.map(r => {
-        const label = r.kind === "essay" ? "文集" : r.kind === "poem" ? "詩詞" : r.kind === "wencui" ? "文粹" : r.kind === "chuangzuo" ? "創作" : r.kind === "youwan" ? "遊玩" : "雜文";
+        const label = r.kind === "essay" ? "文集" : r.kind === "poem" ? "詩詞" : r.kind === "wencui" ? "文粹" : r.kind === "chuangzuo" ? "創作" : r.kind === "youwan" ? "遊玩" : r.kind === "wenyan" ? "文言" : "雜文";
         return `<button class="search-result" data-kind="${r.kind}" data-id="${esc(r.id)}">
           <span class="sr-kind">${label}</span>
           <span class="sr-title">${esc(r.title)}</span>
@@ -1133,6 +1169,9 @@ document.addEventListener("DOMContentLoaded", () => {
           else if (kind === "poem") openPoem(id);
           else if (kind === "zawen") openZawen(id);
           else if (kind === "chuangzuo") openChuangzuo(id);
+          else if (kind === "wenyan") {
+            location.href = "wenyan.html#read/" + id;
+          }
           else if (kind === "youwan") {
             const here = location.pathname.split("/").pop() || "index.html";
             if (here === "youwan.html") location.hash = id;
