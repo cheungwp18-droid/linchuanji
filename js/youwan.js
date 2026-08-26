@@ -46,12 +46,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const tone = g => FACTION_TONE[g.faction] || "gunki";
   const levelText = g => (g.faction === "神將" ? "神" : (g.level != null ? String(g.level) : "—"));
   const skillPairs = g => (g.skills || []).map((n, i) => ({ name: n, desc: (g.descs || [])[i] || "" }));
+  const SEAL_COMPOUND = ["諸葛", "司馬", "夏侯", "太史"];
+  function sealText(name) {
+    name = name || "將";
+    for (const s of SEAL_COMPOUND) if (name.startsWith(s)) return s;
+    if (name.length <= 2) return name;
+    if (name.length === 3) return name.slice(0, 1);
+    return name.slice(0, 2);
+  }
   function avaHTML(g, cls) {
-    const ch = (g.name || "將").slice(0, 1);
-    const img = g.portrait
-      ? `<img src="${esc(g.portrait)}" alt="${esc(g.name)}" loading="lazy" decoding="async">`
-      : `<span>${esc(ch)}</span>`;
-    return `<div class="yw-ava ${cls || ""} f-${tone(g)}" aria-hidden="true">${img}</div>`;
+    const t = sealText(g.name);
+    return `<div class="yw-ava ${cls || ""} f-${tone(g)} n${t.length}" aria-hidden="true"><span>${esc(t)}</span></div>`;
   }
 
   function filtered() {
@@ -293,7 +298,6 @@ document.addEventListener("DOMContentLoaded", () => {
         ${avaHTML(g, "lg")}
         <div>
           <h2>${esc(g.name)}</h2>
-          ${g.portrait ? `<p class="yw-pic-credit">像出維基共享資源 · 公有領域</p>` : ""}
         </div>
       </div>
       <div class="yw-skill-list">${skills}</div>
