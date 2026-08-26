@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <label class="btn file-btn">＋ 選擇本地圖片<input type="file" accept="image/*" multiple hidden data-file></label>
           <span class="img-tip">或於下方貼圖片網址</span>
         </div>
-        <textarea data-f="images" rows="2" placeholder="https://... 或 /images/xxx.jpg">${esc(val)}</textarea>
+        <textarea data-f="images" rows="2" placeholder="https://... 或 images/xxx.jpg">${esc(val)}</textarea>
       </div>`;
   }
 
@@ -208,28 +208,35 @@ document.addEventListener("DOMContentLoaded", () => {
     if (a.getAttribute("href") === here) a.classList.add("active");
   });
 
-  /* ---------- 讀取內容（API 優先，data.js 備援） ---------- */
+  /* ---------- 讀取內容（本機 API，否則 js/data.json） ---------- */
   async function load() {
     try {
       const r = await fetch("/api/content");
       if (!r.ok) throw new Error("no api");
       state = await r.json();
     } catch (e) {
-      state = {
-        essays: (typeof ESSAYS !== "undefined" ? ESSAYS : []),
-        poems:  (typeof POEMS  !== "undefined" ? POEMS  : []),
-        wencui: (typeof WENCUI !== "undefined" ? WENCUI : []),
-        zawen:  (typeof ZAWEN  !== "undefined" ? ZAWEN  : []),
-        chuangzuo: (typeof CHUANGZUO !== "undefined" ? CHUANGZUO : []),
-        motto:  (typeof MOTTO  !== "undefined" ? MOTTO  : {}),
-        about:  (typeof ABOUT  !== "undefined" ? ABOUT  : {})
-      };
-      if (typeof STATIC_DEPLOY === "undefined" || !STATIC_DEPLOY) showServerHint();
+      try {
+        const r = await fetch("js/data.json", { cache: "no-store" });
+        if (!r.ok) throw new Error("no json");
+        state = await r.json();
+      } catch (e2) {
+        state = {
+          essays: (typeof ESSAYS !== "undefined" ? ESSAYS : []),
+          poems:  (typeof POEMS  !== "undefined" ? POEMS  : []),
+          wencui: (typeof WENCUI !== "undefined" ? WENCUI : []),
+          zawen:  (typeof ZAWEN  !== "undefined" ? ZAWEN  : []),
+          chuangzuo: (typeof CHUANGZUO !== "undefined" ? CHUANGZUO : []),
+          motto:  (typeof MOTTO  !== "undefined" ? MOTTO  : {}),
+          about:  (typeof ABOUT  !== "undefined" ? ABOUT  : {})
+        };
+        if (typeof STATIC_DEPLOY === "undefined" || !STATIC_DEPLOY) showServerHint();
+      }
     }
     if (!state.essays) state.essays = [];
     if (!state.poems)  state.poems  = [];
     if (!state.wencui) state.wencui = [];
     if (!state.zawen) state.zawen = [];
+    if (!state.chuangzuo) state.chuangzuo = [];
     renderAll();
     renderSiteStats();
   }
