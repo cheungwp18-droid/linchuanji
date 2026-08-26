@@ -1015,6 +1015,12 @@ document.addEventListener("DOMContentLoaded", () => {
     t._t = setTimeout(() => t.classList.remove("show"), 2600);
   }
 
+  /* ---------- 遊玩區索引（全站搜尋用，延後載入） ---------- */
+  let YOUWAN_ITEMS = [];
+  fetch("js/sanguo-generals.json").then(r => r.ok ? r.json() : { items: [] }).then(d => {
+    YOUWAN_ITEMS = d.items || [];
+  }).catch(() => {});
+
   /* ---------- 全站搜尋 ---------- */
   function wireSearch() {
     const btn = document.getElementById("navSearch");
@@ -1029,7 +1035,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ov.classList.add("open");
       input.value = "";
       meta.textContent = "";
-      results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文粹採集間遍搜標題與正文。</div>`;
+      results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文粹、遊玩區間遍搜。</div>`;
       setTimeout(() => input.focus(), 30);
     }
     function closeSearch() { ov.classList.remove("open"); }
@@ -1054,7 +1060,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const q = input.value.trim();
       if (!q) {
         meta.textContent = "";
-        results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文粹、雜文間遍搜標題、作者、分類與正文。</div>`;
+        results.innerHTML = `<div class="search-empty">輸入關鍵字，於文集、詩詞、文粹、雜文、遊玩區間遍搜。</div>`;
         return;
       }
       const ql = q.toLowerCase();
@@ -1084,6 +1090,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if ([x.title, x.excerpt, x.author, x.season, x.seal, (x.body || []).join(" ")].join(" ").toLowerCase().includes(ql))
           out.push({ kind: "chuangzuo", id: x.id, title: x.title, text: (x.body || []).join(" "), tag: x.season || "創作" });
       });
+      (YOUWAN_ITEMS || []).forEach(x => {
+        const text = [x.name, x.class, x.faction, x.camp, x.origin, x.weapon, x.wskill, x.extra,
+          ...(x.skills || []), ...(x.alias || [])].filter(Boolean).join(" ");
+        if (text.toLowerCase().includes(ql))
+          out.push({ kind: "youwan", id: x.id, title: x.name, text: text, tag: (x.faction || "遊玩") + (x.class ? " · " + x.class : "") });
+      });
 
       meta.textContent = out.length ? `得 ${out.length} 條` : "無相符者";
       if (!out.length) {
@@ -1091,7 +1103,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       results.innerHTML = out.map(r => {
-        const label = r.kind === "essay" ? "文集" : r.kind === "poem" ? "詩詞" : r.kind === "wencui" ? "文粹" : r.kind === "chuangzuo" ? "創作" : "雜文";
+        const label = r.kind === "essay" ? "文集" : r.kind === "poem" ? "詩詞" : r.kind === "wencui" ? "文粹" : r.kind === "chuangzuo" ? "創作" : r.kind === "youwan" ? "遊玩" : "雜文";
         return `<button class="search-result" data-kind="${r.kind}" data-id="${esc(r.id)}">
           <span class="sr-kind">${label}</span>
           <span class="sr-title">${esc(r.title)}</span>
@@ -1107,6 +1119,11 @@ document.addEventListener("DOMContentLoaded", () => {
           else if (kind === "poem") openPoem(id);
           else if (kind === "zawen") openZawen(id);
           else if (kind === "chuangzuo") openChuangzuo(id);
+          else if (kind === "youwan") {
+            const here = location.pathname.split("/").pop() || "index.html";
+            if (here === "youwan.html") location.hash = id;
+            else location.href = "youwan.html#" + id;
+          }
           else openWencui(id);
         });
       });

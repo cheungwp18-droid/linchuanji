@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>雜文 · 林川集</title>
+<title>遊玩區 · 三國鼎立 · 林川集</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
@@ -26,10 +26,25 @@
   <button class="nav-search" id="navSearch" aria-label="全站搜尋">🔍 搜尋</button>
 </nav>
 
-<section class="section wrap">
-  <div class="heading">雜文 <span class="en">Miscellany</span></div>
-  <p style="color:var(--ink-soft);max-width:34rem;margin-bottom:2.4rem">茶餘偶筆、讀書隨札、街巷閒觀——不為章法所拘，但記一時之感。點擊篇目，展卷而讀。</p>
-  <div class="grid" id="zawenGrid"></div>
+<section class="section wrap yw-page">
+  <div class="heading">遊玩區 <span class="en">Play</span></div>
+  <p class="yw-lead">三國鼎立 · 試煉武將。據舊表整理一百零七將：蜀魏吳各二十四、神將九、日本二十六。缺欄標「未錄」，不臆造技能。</p>
+  <p class="yw-note" id="ywNote"></p>
+  <details class="yw-fixes">
+    <summary>整理說明</summary>
+    <ul id="ywFixes"></ul>
+  </details>
+
+  <div class="yw-tabs" role="tablist">
+    <button type="button" class="yw-tab on" role="tab" data-mode="atlas" aria-selected="true">圖鑑</button>
+    <button type="button" class="yw-tab" role="tab" data-mode="compare" aria-selected="false">對照</button>
+    <button type="button" class="yw-tab" role="tab" data-mode="trial" aria-selected="false">試煉</button>
+  </div>
+  <div class="yw-count" id="ywCount"></div>
+  <div class="yw-toolbar" id="ywToolbar"></div>
+  <div class="yw-grid" id="ywGrid"></div>
+  <div class="yw-compare" id="ywCompare" hidden></div>
+  <div class="yw-trial" id="ywTrial" hidden></div>
 </section>
 
 <footer class="footer">
@@ -39,8 +54,8 @@
 </footer>
 
 <div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
+<div class="overlay" id="ywOverlay"><div class="sheet yw-sheet" id="ywSheet"></div></div>
 
-<!-- 全站搜尋 -->
 <div class="search-overlay" id="searchOverlay">
   <div class="search-panel">
     <button class="search-close" id="searchClose" aria-label="關閉">×</button>
@@ -55,5 +70,6 @@
 
 <script src="js/data.js"></script>
 <script src="js/main.js"></script>
+<script src="js/youwan.js"></script>
 </body>
 </html>
