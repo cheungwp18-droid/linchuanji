@@ -159,7 +159,7 @@
           <button type="button" data-recite="both">雙語朗誦</button>
         </div>
       </div></div>
-      <div class="lesson-stage">
+      <div class="teacher" id="teacher" hidden></div>
       <div class="reader">
         <section class="lead">
           <div class="lead-art"><img src="${asset("img/recite.jpg")}" alt=""></div>
@@ -177,10 +177,6 @@
         </section>
         ${paras}
         ${pager(e)}
-      </div>
-      <aside class="teacher-col">
-        <div class="teacher" id="teacher" hidden></div>
-      </aside>
       </div>`;
 
     markSeg();
@@ -956,26 +952,34 @@
   }
 
   let barWatch = null;
+  let fitting = false;
   function fitTeacher() {
-    const nav = document.querySelector("nav.nav");
-    const bar = document.querySelector(".reader-bar");
-    document.documentElement.style.setProperty("--nav-h", (nav ? nav.offsetHeight : 56) + "px");
-    document.documentElement.style.setProperty("--bar-h", (bar ? bar.offsetHeight : 52) + "px");
-    if (typeof ResizeObserver === "undefined") return;
-    if (barWatch && barWatch.bar !== bar) {
-      barWatch.ro.disconnect();
-      barWatch = null;
-    }
-    if (bar && !barWatch) {
-      const ro = new ResizeObserver(() => {
-        const n = document.querySelector("nav.nav");
-        const b = document.querySelector(".reader-bar");
-        document.documentElement.style.setProperty("--nav-h", (n ? n.offsetHeight : 56) + "px");
-        document.documentElement.style.setProperty("--bar-h", (b ? b.offsetHeight : 52) + "px");
-      });
-      ro.observe(bar);
-      if (nav) ro.observe(nav);
-      barWatch = { bar, ro };
+    if (fitting) return;
+    fitting = true;
+    try {
+      const nav = document.querySelector("nav.nav");
+      const bar = document.querySelector(".reader-bar");
+      const dock = document.getElementById("teacher");
+      const navH = nav && nav.offsetParent !== null ? nav.offsetHeight : 0;
+      const barH = bar ? bar.offsetHeight : 52;
+      const dockH = dock && !dock.hidden ? dock.offsetHeight : 0;
+      document.documentElement.style.setProperty("--nav-h", navH + "px");
+      document.documentElement.style.setProperty("--bar-h", barH + "px");
+      document.documentElement.style.setProperty("--dock-h", dockH + "px");
+      if (typeof ResizeObserver === "undefined") return;
+      if (barWatch && (barWatch.bar !== bar || barWatch.dock !== dock)) {
+        barWatch.ro.disconnect();
+        barWatch = null;
+      }
+      if (bar && !barWatch) {
+        const ro = new ResizeObserver(() => fitTeacher());
+        ro.observe(bar);
+        if (nav) ro.observe(nav);
+        if (dock) ro.observe(dock);
+        barWatch = { bar, dock, ro };
+      }
+    } finally {
+      fitting = false;
     }
   }
 
@@ -984,13 +988,12 @@
     const dock = document.getElementById("teacher");
     const bar = document.querySelector(".reader-bar");
     const nav = document.querySelector("nav.nav");
-    const split = document.body.classList.contains("teaching") && window.matchMedia("(min-width: 901px)").matches;
-    const navH = nav ? nav.offsetHeight : 0;
+    const navH = nav && nav.offsetParent !== null ? nav.offsetHeight : 0;
     const barH = bar ? bar.offsetHeight : 0;
-    const dockH = !split && dock && !dock.hidden ? dock.offsetHeight : 0;
+    const dockH = dock && !dock.hidden ? dock.offsetHeight : 0;
     const topReserve = navH + barH + dockH;
     const vis = Math.max(120, window.innerHeight - topReserve);
-    const y = el.getBoundingClientRect().top + (window.scrollY || 0) - topReserve - vis * 0.16;
+    const y = el.getBoundingClientRect().top + (window.scrollY || 0) - topReserve - vis * 0.12;
     window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
   }
 

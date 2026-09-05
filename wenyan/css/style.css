@@ -359,6 +359,7 @@ footer.site {
 .sent {
   padding: 14px 4px 16px;
   border-bottom: 1px dashed var(--line);
+  scroll-margin-top: calc(var(--bar-h, 4.2rem) + var(--dock-h, 0px) + 12px);
 }
 .orig {
   display: flex;
@@ -550,13 +551,11 @@ body.wy-reading .reader-bar {
   z-index: 40;
 }
 body.wy-reading .reader-bar .inner {
-  max-width: 1240px;
+  max-width: 920px;
   padding: 8px 14px;
 }
-body.teaching .sent { transition: opacity 0.2s ease, background 0.2s ease; cursor: pointer; }
-body.teaching.beat-sent .sent { opacity: 0.82; }
+body.teaching .sent { transition: background 0.2s ease; cursor: pointer; }
 body.teaching.beat-sent .sent.current {
-  opacity: 1;
   background: rgba(179, 58, 26, 0.08);
   box-shadow: inset 4px 0 0 var(--cinnabar);
   padding-left: 10px;
@@ -569,35 +568,17 @@ body.teaching .tok.speaking .ch {
 }
 body.teaching .reciter-seg,
 body.teaching .sent-tools { display: none; }
-body.teaching .lesson-stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(260px, 340px);
-  align-items: stretch;
-  gap: 0 12px;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 0 12px 2rem;
-}
-body.teaching .teacher-col { min-width: 0; }
-.teacher-col:has(.teacher[hidden]) { display: none; }
 body.teaching .reader {
-  max-width: none;
-  padding: 16px 12px 3rem;
+  padding-top: 12px;
 }
-body.teaching .lead-art { width: min(28%, 160px); }
+body.teaching .teacher[hidden] { display: none !important; }
 body.teaching .teacher {
   position: sticky;
-  top: calc(var(--bar-h, 4.2rem) + 8px);
-  left: auto;
-  right: auto;
-  bottom: auto;
-  z-index: 25;
-  max-height: calc(100vh - var(--bar-h, 4.2rem) - 16px);
+  top: var(--bar-h, 4.2rem);
+  z-index: 35;
   border-top: none;
-  border-left: 4px solid var(--ink);
-  box-shadow: none;
-  overflow-x: hidden;
-  overflow-y: auto;
+  border-bottom: 4px solid var(--ink);
+  overflow: visible;
 }
 
 .tok.quiz-ok { background: rgba(29, 92, 71, 0.18); }
@@ -612,12 +593,12 @@ body.teaching .teacher {
   overflow: visible;
 }
 .teacher .inner {
-  max-width: 960px;
+  max-width: 920px;
   margin: 0 auto;
-  padding: 10px 12px 12px;
+  padding: 8px 16px 10px;
   display: grid;
-  grid-template-columns: 72px 1fr;
-  gap: 8px 12px;
+  grid-template-columns: 56px 1fr;
+  gap: 6px 12px;
   align-items: start;
 }
 .face-wrap {
@@ -625,8 +606,8 @@ body.teaching .teacher {
   justify-self: center;
 }
 .teacher .face {
-  width: 72px;
-  height: 96px;
+  width: 56px;
+  height: 76px;
   object-fit: cover;
   object-position: 50% 8%;
   border: 3px solid var(--ink);
@@ -819,21 +800,6 @@ body.teaching .sent.current.reciting .orig {
 .q-opt.wrong { background: #f8d4cc; }
 .q-fb { margin-top: 8px; font-size: 14px; color: var(--ink-soft); }
 
-@media (max-width: 900px) {
-  body.teaching .lesson-stage {
-    grid-template-columns: 1fr;
-    padding: 0 0 1rem;
-  }
-  body.teaching .teacher-col { order: -1; }
-  body.teaching .teacher {
-    position: sticky;
-    top: var(--bar-h, 4.2rem);
-    max-height: min(46vh, 22rem);
-    border-left: none;
-    border-bottom: 4px solid var(--ink);
-  }
-  body.teaching .reader { padding: 12px 14px 2rem; }
-}
 @media (max-width: 720px) {
   .mast { grid-template-columns: 1fr; }
   .seal { display: none; }
@@ -841,7 +807,7 @@ body.teaching .sent.current.reciting .orig {
   .r-title { width: 100%; }
   .teaser { grid-template-columns: 72px 1fr; }
   .teaser img { width: 72px; height: 96px; }
-  .teacher .inner { grid-template-columns: 56px 1fr; padding: 8px 10px 10px; }
-  .teacher .face { width: 56px; height: 76px; }
+  .teacher .inner { grid-template-columns: 48px 1fr; padding: 8px 12px 10px; }
+  .teacher .face { width: 48px; height: 64px; }
   .t-ctrl .tog { padding: 4px 8px; font-size: 12px; }
 }
