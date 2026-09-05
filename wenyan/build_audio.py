@@ -1,21 +1,27 @@
 #!/usr/bin/env python3
-"""Pre-render 講課／朗誦 m4a with macOS say (Meijia / Sinji)."""
+"""Pre-render 講課／朗誦 mp3 with Microsoft neural TTS (edge-tts).
+
+發音源：
+  國語  zh-CN-XiaoxiaoNeural  標準普通話（對應《普通話異讀詞審音表》）
+  粵語  zh-HK-HiuMaanNeural   香港粵語神經語音
+原文直讀，不加同音替換，以免「月／衡／並」等聽成別字。
+"""
+import asyncio
 import json
-import os
 import re
-import subprocess
 import sys
-import tempfile
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-from tts_map import speak_original, speak_plain
+import edge_tts
 
 ROOT = Path(__file__).resolve().parent
 ESSAYS = ROOT / "data" / "essays.js"
 OUT = ROOT / "audio" / "say"
-# 朗誦宜慢：say 預設約 175 wpm；文言台詞誦再放慢。
-VOICES = {"zh-TW": ("Meijia", 118), "zh-HK": ("Sinji", 102)}
+VOICES = {
+    "zh-TW": "zh-CN-XiaoxiaoNeural",  # 國語按鈕：用標準普通話
+    "zh-HK": "zh-HK-HiuMaanNeural",
+}
+RATE = "-25%"
 
 UI = {
     "zh-TW": [
@@ -56,19 +62,16 @@ def load_essays():
 
 def collect():
     data = load_essays()
-    items = []  # (lang, original, spoken)
+    items = []
 
-    def add(lang, original, spoken=None, literary=False, tokens=None):
-        original = str(original or "").strip()
-        if not original:
-            return
-        if spoken is None:
-            spoken = speak_original(lang, original, tokens) if literary else speak_plain(original)
-        items.append((lang, original, spoken))
+    def add(lang, text):
+        text = str(text or "").strip()
+        if text:
+            items.append((lang, text))
 
     for lang, phrases in UI.items():
         for p in phrases:
-            add(lang, p, literary=False)
+            add(lang, p)
     for e in data["essays"]:
         add("zh-TW", f"這一講，我們讀{e.get('dynasty','')}{e.get('author','')}的《{e.get('title','')}》。")
         add("zh-HK", f"呢一講，我哋讀{e.get('dynasty','')}{e.get('author','')}嘅《{e.get('title','')}》。")
@@ -89,91 +92,81 @@ def collect():
                 add("zh-HK", f"下一段，「{p['title']}」。")
             for s in p.get("sentences") or []:
                 if s.get("text"):
-                    toks = s.get("tokens")
-                    add("zh-TW", s["text"], literary=True, tokens=toks)
-                    add("zh-HK", s["text"], literary=True, tokens=toks)
+                    add("zh-TW", s["text"])
+                    add("zh-HK", s["text"])
                 if s.get("trans"):
                     add("zh-TW", "意思是：" + s["trans"])
                     add("zh-HK", "意思係：" + s["trans"])
     uniq = {}
-    for lang, original, spoken in items:
-        uniq[(lang, original)] = (clip_hash(lang, original), spoken)
+    for lang, text in items:
+        uniq[(lang, text)] = clip_hash(lang, text)
     return uniq
 
 
-def render_one(lang: str, text: str, dest: Path) -> str:
-    voice, rate = VOICES[lang]
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    fd, aiff = tempfile.mkstemp(suffix=".aiff")
-    os.close(fd)
-    try:
-        r = subprocess.run(
-            ["say", "-v", voice, "-r", str(rate), "-o", aiff, text],
-            capture_output=True,
-            timeout=60,
-        )
-        if r.returncode != 0 or not os.path.exists(aiff) or os.path.getsize(aiff) < 100:
-            return "fail-say"
-        tmp_m4a = str(dest) + ".tmp.m4a"
-        r2 = subprocess.run(
-            ["afconvert", "-f", "m4af", "-d", "aac", "-s", "3", "-b", "48000", aiff, tmp_m4a],
-            capture_output=True,
-            timeout=30,
-        )
-        if r2.returncode != 0 or not os.path.exists(tmp_m4a):
-            return "fail-af"
-        os.replace(tmp_m4a, dest)
-        return "ok"
-    finally:
+async def render_one(sem, lang, text, dest: Path) -> str:
+    async with sem:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        tmp = dest.with_suffix(".tmp.mp3")
         try:
-            os.remove(aiff)
-        except OSError:
-            pass
-        try:
-            os.remove(str(dest) + ".tmp.m4a")
-        except OSError:
-            pass
+            comm = edge_tts.Communicate(text, VOICES[lang], rate=RATE)
+            await comm.save(str(tmp))
+            if not tmp.exists() or tmp.stat().st_size < 400:
+                return "fail-empty"
+            tmp.replace(dest)
+            return "ok"
+        except Exception:
+            try:
+                tmp.unlink(missing_ok=True)
+            except TypeError:
+                if tmp.exists():
+                    tmp.unlink()
+            return "fail"
+        finally:
+            try:
+                if tmp.exists() and tmp != dest:
+                    tmp.unlink()
+            except OSError:
+                pass
 
 
-def main():
+async def main_async():
     uniq = collect()
     jobs = []
-    for (lang, original), (hid, spoken) in uniq.items():
-        dest = OUT / lang / f"{hid}.m4a"
-        jobs.append((lang, spoken, dest, hid))
-    print(f"clips {len(jobs)}", flush=True)
-    ok = skip = fail = 0
+    for (lang, text), hid in uniq.items():
+        dest = OUT / lang / f"{hid}.mp3"
+        jobs.append((lang, text, dest, hid))
+    print(f"clips {len(jobs)} voices={VOICES} rate={RATE}", flush=True)
+    sem = asyncio.Semaphore(5)
+    ok = fail = 0
     index = {"zh-TW": [], "zh-HK": []}
-    with ThreadPoolExecutor(max_workers=5) as ex:
-        futs = {ex.submit(render_one, lang, text, dest): (lang, hid) for lang, text, dest, hid in jobs}
-        for i, fut in enumerate(as_completed(futs), 1):
-            lang, hid = futs[fut]
-            try:
-                st = fut.result()
-            except Exception:
-                st = "fail"
-            if st == "ok":
-                ok += 1
-            elif st == "skip":
-                skip += 1
-            else:
-                fail += 1
-            if st in ("ok", "skip"):
-                index[lang].append(hid)
-            if i % 50 == 0 or i == len(jobs):
-                print(f"... {i}/{len(jobs)} ok={ok} skip={skip} fail={fail}", flush=True)
-    ping_src = OUT / "zh-TW" / f"{clip_hash('zh-TW', '講')}.m4a"
-    ping_dst = OUT / "ping.m4a"
+    async def tagged(lang, hid, dest, text):
+        st = await render_one(sem, lang, text, dest)
+        return lang, hid, st
+
+    tasks = [tagged(lang, hid, dest, text) for lang, text, dest, hid in jobs]
+    n = 0
+    for fut in asyncio.as_completed(tasks):
+        lang, hid, st = await fut
+        n += 1
+        if st == "ok":
+            ok += 1
+            index[lang].append(hid)
+        else:
+            fail += 1
+            print("fail", lang, hid, st, flush=True)
+        if n % 50 == 0 or n == len(jobs):
+            print(f"... {n}/{len(jobs)} ok={ok} fail={fail}", flush=True)
+    ping_src = OUT / "zh-TW" / f"{clip_hash('zh-TW', '講')}.mp3"
+    ping_dst = OUT / "ping.mp3"
     if ping_src.exists():
         ping_dst.write_bytes(ping_src.read_bytes())
-    idx_path = OUT / "index.js"
-    idx_path.write_text(
+    (OUT / "index.js").write_text(
         "window.WENYAN_SAY = " + json.dumps(index, ensure_ascii=False) + ";\n",
         encoding="utf-8",
     )
-    print(f"done ok={ok} skip={skip} fail={fail} -> {OUT}", flush=True)
+    print(f"done ok={ok} fail={fail} -> {OUT}", flush=True)
     return 0 if fail == 0 else 1
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(asyncio.run(main_async()))

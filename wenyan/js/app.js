@@ -488,7 +488,7 @@
 
   function unlockSpeech() {
     try {
-      const a = new Audio(asset("audio/say/ping.m4a"));
+      const a = new Audio(asset("audio/say/ping.mp3"));
       a.volume = 1;
       reciter.audio = a;
       a.play().catch(() => {});
@@ -631,7 +631,7 @@
   function speakFile(lang, id, gen) {
     return new Promise((resolve) => {
       if (gen !== reciter.gen) return resolve();
-      const a = new Audio(asset("audio/say/" + lang + "/" + id + ".m4a"));
+      const a = new Audio(asset("audio/say/" + lang + "/" + id + ".mp3"));
       reciter.audio = a;
       const done = () => {
         if (reciter.audio === a) reciter.audio = null;

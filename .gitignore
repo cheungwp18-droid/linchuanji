@@ -4,3 +4,4 @@ node_modules/
 stats.json
 .env
 wenyan/audio/cache/
+wenyan/.venv/
