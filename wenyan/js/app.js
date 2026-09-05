@@ -201,9 +201,15 @@
         if (k === "xuci") refreshXuci();
       };
     });
-    document.getElementById("btn-teach").onclick = () => toggleLesson(e);
+    document.getElementById("btn-teach").onclick = () => {
+      unlockSpeech();
+      toggleLesson(e);
+    };
     document.querySelectorAll("#reciter-btns button").forEach((b) => {
-      b.onclick = () => toggleRecite(e, b.dataset.recite);
+      b.onclick = () => {
+        unlockSpeech();
+        toggleRecite(e, b.dataset.recite);
+      };
     });
     app.querySelectorAll(".sent").forEach((el) => {
       el.addEventListener("click", (ev) => {
@@ -320,6 +326,7 @@
     });
     app.querySelectorAll(".speak").forEach((b) => {
       b.onclick = () => {
+        unlockSpeech();
         const pi = +b.dataset.pi,
           si = +b.dataset.si;
         const sent = essay.paragraphs[pi].sentences[si];
@@ -327,7 +334,6 @@
         reciter.playing = false;
         reciter.mode = "";
         markReciteBtn();
-        cancelSpeech();
         reciter.abort = false;
         if (b.dataset.lang === "both") recitePassage(sent.text, el, "both");
         else speak(sent.text, b.dataset.lang, "recite");
@@ -461,6 +467,12 @@
     })
     .catch(() => {});
 
+  const heldUtter = [];
+  function holdUtter(u) {
+    heldUtter.push(u);
+    if (heldUtter.length > 12) heldUtter.shift();
+  }
+
   function cancelSpeech() {
     reciter.gen += 1;
     reciter.abort = true;
@@ -474,10 +486,29 @@
     }
   }
 
-  function kickSpeech() {
+  function unlockSpeech() {
+    if (!window.speechSynthesis) return;
     try {
+      speechSynthesis.getVoices();
       speechSynthesis.resume();
+      const u = new SpeechSynthesisUtterance("。");
+      u.volume = 0.01;
+      u.rate = 2;
+      u.lang = state.voice === "zh-HK" ? "zh-HK" : "zh-TW";
+      holdUtter(u);
+      speechSynthesis.speak(u);
     } catch (e) {}
+  }
+
+  function voicesReady() {
+    return new Promise((resolve) => {
+      if (!window.speechSynthesis) return resolve([]);
+      const now = speechSynthesis.getVoices() || [];
+      if (now.length) return resolve(now);
+      const done = () => resolve(speechSynthesis.getVoices() || []);
+      speechSynthesis.addEventListener("voiceschanged", done, { once: true });
+      setTimeout(done, 700);
+    });
   }
 
   function speakBrowser(text, lang, kind, gen) {
@@ -503,7 +534,9 @@
         if (i >= bits.length) return finish();
         const piece = bits[i++];
         const u = new SpeechSynthesisUtterance(piece);
-        u.lang = lang;
+        holdUtter(u);
+        u.lang = lang === "zh-HK" ? "zh-HK" : lang === "zh-CN" ? "zh-CN" : "zh-TW";
+        u.volume = 1;
         let settled = false;
         const proceed = (delay) => {
           if (settled || finished) return;
@@ -517,31 +550,35 @@
         };
         if (kind === "recite") {
           const heavy = /[。！？]$/.test(piece);
-          u.pitch = heavy ? 0.9 : 0.98;
-          u.rate = lang === "zh-HK" ? 0.6 : 0.62;
-          u.onend = () => proceed(heavy ? 520 : 280);
+          u.pitch = heavy ? 0.92 : 1;
+          u.rate = lang === "zh-HK" ? 0.72 : 0.78;
+          u.onend = () => proceed(heavy ? 380 : 180);
         } else {
-          u.pitch = 1.18;
-          u.rate = 0.92;
-          u.onend = () => proceed(0);
+          u.pitch = 1.12;
+          u.rate = 0.95;
+          u.onend = () => proceed(80);
         }
         const v = pickVoice(lang, kind);
         if (v) u.voice = v;
-        u.onerror = () => proceed(0);
-        timer = setTimeout(() => {
-          try {
-            speechSynthesis.cancel();
-          } catch (e) {}
+        u.onerror = (ev) => {
+          const err = ev && ev.error;
+          if (err === "canceled" || err === "interrupted") return;
           proceed(0);
-        }, Math.min(18000, 900 + piece.length * 420));
-        kickSpeech();
+        };
+        const ms = Math.min(28000, 2000 + piece.length * 380);
+        timer = setTimeout(() => {
+          if (window.speechSynthesis && speechSynthesis.speaking) {
+            timer = setTimeout(() => proceed(0), 10000);
+            return;
+          }
+          proceed(0);
+        }, ms);
         try {
+          speechSynthesis.resume();
           speechSynthesis.speak(u);
         } catch (e) {
           proceed(0);
-          return;
         }
-        kickSpeech();
       };
       next();
     });
@@ -625,7 +662,9 @@
       return;
     }
     if (lesson.on) stopLesson(false);
+    unlockSpeech();
     cancelSpeech();
+    reciter.abort = false;
     reciter.playing = true;
     reciter.mode = mode;
     reciter.abort = false;
@@ -907,7 +946,11 @@
       stopLesson(false);
       return;
     }
-    stopRecite(false);
+    unlockSpeech();
+    reciter.playing = false;
+    reciter.mode = "";
+    reciter.abort = false;
+    markReciteBtn();
     lesson.on = true;
     lesson.essay = essay;
     lesson.scoreOk = 0;
@@ -920,7 +963,7 @@
     document.getElementById("btn-teach").classList.add("on");
     document.getElementById("teacher").hidden = false;
     fitTeacher();
-    go(0);
+    go(0, true);
   }
 
   function stopLesson(fromRoute) {
@@ -1140,12 +1183,12 @@
     fitTeacher();
   }
 
-  function go(i) {
+  function go(i, immediate) {
     if (i < 0 || i >= lesson.beats.length) return;
     lesson.abort = true;
     lesson.playId = (lesson.playId || 0) + 1;
     stopFlap();
-    cancelSpeech();
+    if (!immediate) cancelSpeech();
     reciter.abort = false;
     if (hAudio) {
       hAudio.pause();
@@ -1159,8 +1202,12 @@
     renderDock();
     const token = (lesson.nav = (lesson.nav || 0) + 1);
     lesson.abort = false;
+    if (immediate) {
+      playBeat();
+      return;
+    }
     if (lesson.auto) {
-      wait(160).then(() => {
+      wait(80).then(() => {
         if (lesson.nav === token && lesson.on && lesson.auto && !lesson.abort) playBeat();
       });
     }
