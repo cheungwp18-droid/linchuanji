@@ -2,3 +2,5 @@ server-daemon.log
 .DS_Store
 node_modules/
 stats.json
+.env
+wenyan/audio/cache/

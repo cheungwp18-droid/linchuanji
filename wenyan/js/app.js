@@ -1,5 +1,9 @@
 /* 文言四十講 */
 (function () {
+  const ASSET = (document.currentScript && document.currentScript.src)
+    ? document.currentScript.src.replace(/js\/app\.js(\?.*)?$/, "")
+    : "wenyan/";
+  const asset = (p) => ASSET + String(p || "").replace(/^\//, "");
   const DATA = window.WENYAN;
   const STAGES = {
     1: { name: "文言初識", hint: "記賦銘說，先立語感" },
@@ -51,6 +55,7 @@
     if (!state.trans) document.body.classList.add("hide-trans");
     if (!state.notes) document.body.classList.add("hide-notes");
     if (lesson.on) document.body.classList.add("teaching");
+    else document.body.classList.remove("beat-sent");
   }
 
   function save() {
@@ -63,6 +68,7 @@
 
   function route() {
     hidePop();
+    stopRecite(true);
     stopLesson(true);
     const h = location.hash.replace(/^#/, "");
     if (h.startsWith("read/")) {
@@ -74,6 +80,7 @@
   }
 
   function renderHome() {
+    document.body.classList.remove("wy-reading", "beat-sent");
     document.title = "文言四十講 · 精讀";
     const groups = [1, 2, 3, 4].map((st) => {
       const items = DATA.essays
@@ -88,6 +95,7 @@
         )
         .join("");
       return `<section class="stage">
+        <div class="stage-art"><img src="${asset("img/stage" + st + ".jpg")}" alt=""></div>
         <div class="stage-head">
           <span class="clock">⏱</span>
           <h2>階段${toZh(st)}　${STAGES[st].name}</h2>
@@ -97,29 +105,31 @@
       </section>`;
     });
 
-    app.innerHTML = `<div class="wrap">
+    app.innerHTML = `<div class="hero-art"><img src="${asset("img/hero.jpg")}" alt=""></div>
+      <div class="wrap">
       <header class="mast">
         <div>
-          <p class="kicker">精讀 · 卡通課堂 · 雙語</p>
+          <p class="kicker">精讀 · 國語／粵語朗誦 · 卡通課堂</p>
           <h1>挑戰四十講<br>搞定<em>文言文</em></h1>
-          <p class="tagline">知知老師　國語／粵語一鍵切換</p>
+          <p class="tagline">國語、粵語可分開朗誦　亦可雙語連誦</p>
         </div>
         <div class="seal">卡通<br>雙語<br>講課</div>
       </header>
       <div class="teaser">
-        <img src="img/anim-idle.gif" alt="知知老師">
+        <img src="${asset("img/anim-idle.gif")}" alt="知知老師">
         <div>
           <h3>知知老師 · 卡通文言課堂</h3>
-          <p>卡通動畫講課。點進一篇按「講課」，老師會開口、眨眼、提問；國語／粵語可切換。</p>
+          <p>點進一篇可選「國語朗誦」或「粵語朗誦」，亦可雙語連誦。本機若已設專業語音，朗誦會較有情感與句讀。按「講課」則卡通老師帶讀。</p>
         </div>
       </div>
-      <p class="intro">依課表二十八篇編成可點讀的精讀本。原文繁體；每個漢字可看<strong>國語拼音</strong>與<strong>粵拼</strong>。粵音取文言誦讀常用的文讀。</p>
+      <p class="intro">依課表二十八篇編成可點讀的精讀本。原文繁體；每個漢字可看<strong>國語拼音</strong>與<strong>粵拼</strong>。粵音取文言誦讀常用的文讀。朗誦採較慢文讀節奏，國語、粵語可分開選。</p>
       ${groups.join("")}
       <footer class="site">共 ${DATA.count} 篇　${DATA.essays.reduce((n, e) => n + e.chars, 0)} 字　語料據通行課本整理。</footer>
     </div>`;
   }
 
   function renderReader(e) {
+    document.body.classList.add("wy-reading");
     document.title = `${e.title} · 文言四十講`;
     applyBody();
     const paras = e.paragraphs
@@ -143,9 +153,16 @@
         <button class="tog ${state.notes ? "on" : ""}" data-k="notes" type="button">註釋</button>
         <button class="tog ${state.xuci ? "on" : ""}" data-k="xuci" type="button">虛詞</button>
         <button class="tog" id="btn-teach" type="button">${esc(ui().teach)}</button>
+        <div class="seg reciter-seg" id="reciter-btns">
+          <button type="button" data-recite="zh-TW">國語朗誦</button>
+          <button type="button" data-recite="zh-HK">粵語朗誦</button>
+          <button type="button" data-recite="both">雙語朗誦</button>
+        </div>
       </div></div>
+      <div class="lesson-stage">
       <div class="reader">
         <section class="lead">
+          <div class="lead-art"><img src="${asset("img/recite.jpg")}" alt=""></div>
           <div class="who">${esc(e.dynasty)}　${esc(e.author)}${e.years ? "　" + esc(e.years) : ""}</div>
           <h1>${esc(e.title)}</h1>
           <div class="chips">
@@ -161,7 +178,10 @@
         ${paras}
         ${pager(e)}
       </div>
-      <div class="teacher" id="teacher" hidden></div>`;
+      <aside class="teacher-col">
+        <div class="teacher" id="teacher" hidden></div>
+      </aside>
+      </div>`;
 
     markSeg();
     document.getElementById("go-home").onclick = () => {
@@ -186,8 +206,25 @@
       };
     });
     document.getElementById("btn-teach").onclick = () => toggleLesson(e);
+    document.querySelectorAll("#reciter-btns button").forEach((b) => {
+      b.onclick = () => toggleRecite(e, b.dataset.recite);
+    });
+    app.querySelectorAll(".sent").forEach((el) => {
+      el.addEventListener("click", (ev) => {
+        if (!lesson.on) return;
+        if (ev.target.closest(".speak")) return;
+        if (currentQuiz() && currentQuiz().type === "click" && ev.target.closest(".tok")) return;
+        const pi = +el.dataset.pi;
+        const si = +el.dataset.si;
+        const idx = lesson.beats.findIndex((b) => b.kind === "sent" && b.pi === pi && b.si === si);
+        if (idx < 0) return;
+        lesson.auto = true;
+        go(idx);
+      });
+    });
     refreshXuci();
     bindTokens(e);
+    fitTeacher();
   }
 
   function pager(e) {
@@ -241,6 +278,7 @@
       <div class="sent-tools">
         <button class="speak" type="button" data-lang="zh-TW" data-pi="${pi}" data-si="${si}">▶ 國語</button>
         <button class="speak" type="button" data-lang="zh-HK" data-pi="${pi}" data-si="${si}">▶ 粵語</button>
+        <button class="speak bilingual" type="button" data-lang="both" data-pi="${pi}" data-si="${si}">▶ 雙語</button>
       </div>
     </article>`;
   }
@@ -289,7 +327,14 @@
         const pi = +b.dataset.pi,
           si = +b.dataset.si;
         const sent = essay.paragraphs[pi].sentences[si];
-        speak(sent.text, b.dataset.lang, "recite");
+        const el = document.getElementById("s-" + pi + "-" + si);
+        reciter.playing = false;
+        reciter.mode = "";
+        markReciteBtn();
+        cancelSpeech();
+        reciter.abort = false;
+        if (b.dataset.lang === "both") recitePassage(sent.text, el, "both");
+        else speak(sent.text, b.dataset.lang, "recite");
       };
     });
   }
@@ -298,7 +343,7 @@
     pop.hidden = true;
   }
 
-  function voiceScore(v, lang) {
+  function voiceScore(v, lang, kind) {
     const n = (v.name + " " + v.lang).toLowerCase();
     let s = 0;
     const female =
@@ -308,7 +353,13 @@
     const male = /male|男|david|daniel|yunjian|kangkang|yunyang|\blee\b|chang/.test(n) && !/female/.test(n);
     if (female) s += 12;
     if (male) s -= 20;
-    if (/girl|child|kid|junior|princess|hana|xiao|ting/.test(n)) s += 6;
+    if (kind === "recite") {
+      if (/enhanced|premium|neural|compact|siri/.test(n)) s += 10;
+      if (/girl|child|kid|junior|princess/.test(n)) s -= 3;
+    } else {
+      if (/girl|child|kid|junior|princess|hana|xiao|ting/.test(n)) s += 6;
+      if (/enhanced|premium|neural|compact/.test(n)) s += 2;
+    }
     if (lang === "zh-HK") {
       if (/hk|yue|cantonese|sinji|sin-ji/.test(n)) s += 16;
     } else {
@@ -316,15 +367,14 @@
       if (/cn|tingting|ting-ting|xiaoxiao/.test(n)) s += 10;
     }
     if (/zh/.test(n)) s += 4;
-    if (/enhanced|premium|neural|compact/.test(n)) s += 2;
     return s;
   }
 
-  function pickVoice(lang) {
+  function pickVoice(lang, kind) {
     const voices = speechSynthesis.getVoices() || [];
     if (!voices.length) return null;
     const ranked = voices
-      .map((v) => ({ v, s: voiceScore(v, lang) }))
+      .map((v) => ({ v, s: voiceScore(v, lang, kind) }))
       .sort((a, b) => b.s - a.s);
     return ranked[0] && ranked[0].s > 0 ? ranked[0].v : voices[0];
   }
@@ -340,7 +390,7 @@
   let hAudio = null;
 
   function clipUrl(n) {
-    return "audio/hermione/clip_" + String(n).padStart(2, "0") + ".m4a";
+    return asset("audio/hermione/clip_" + String(n).padStart(2, "0") + ".m4a");
   }
 
   function playClip(role) {
@@ -375,13 +425,13 @@
     const face = document.querySelector(".teacher .face");
     if (!face) return;
     face.className = "face " + (mood || "idle");
-    const src = {
+    const src = asset({
       talk: "img/anim-talk.gif",
       quiz: "img/anim-quiz.gif",
       yes: "img/anim-yes.gif",
       no: "img/anim-no.gif",
       idle: "img/anim-idle.gif",
-    }[mood] || "img/anim-idle.gif";
+    }[mood] || "img/anim-idle.gif");
     if (face.getAttribute("data-src") !== src) {
       face.setAttribute("data-src", src);
       face.src = src;
@@ -406,19 +456,204 @@
     setTimeout(() => el.classList.remove("show"), 900);
   }
 
-  function speak(text, lang, kind) {
+  const reciter = { abort: false, playing: false, gen: 0, mode: "", audio: null };
+  let grokTts = false;
+  fetch("/api/tts/status")
+    .then((r) => (r.ok ? r.json() : { ok: false }))
+    .then((d) => {
+      grokTts = !!d.ok;
+    })
+    .catch(() => {});
+
+  function cancelSpeech() {
+    reciter.gen += 1;
+    reciter.abort = true;
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    if (reciter.audio) {
+      try {
+        reciter.audio.pause();
+        reciter.audio.src = "";
+      } catch (e) {}
+      reciter.audio = null;
+    }
+  }
+
+  function kickSpeech() {
+    try {
+      speechSynthesis.resume();
+    } catch (e) {}
+  }
+
+  function speakBrowser(text, lang, kind, gen) {
     return new Promise((resolve) => {
       if (!window.speechSynthesis || !text) return resolve();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = lang;
-      u.pitch = kind === "recite" ? 1.32 : 1.42;
-      u.rate = kind === "recite" ? 0.72 : 0.88;
-      const v = pickVoice(lang);
-      if (v) u.voice = v;
-      u.onend = () => resolve();
-      u.onerror = () => resolve();
-      speechSynthesis.speak(u);
+      const bits = kind === "recite" ? clauses(text) : [String(text)];
+      let i = 0;
+      let timer = 0;
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        if (timer) clearTimeout(timer);
+        resolve();
+      };
+      const next = () => {
+        if (timer) {
+          clearTimeout(timer);
+          timer = 0;
+        }
+        if (finished) return;
+        if (gen !== reciter.gen || (lesson.on && lesson.abort)) return finish();
+        if (i >= bits.length) return finish();
+        const piece = bits[i++];
+        const u = new SpeechSynthesisUtterance(piece);
+        u.lang = lang;
+        let settled = false;
+        const proceed = (delay) => {
+          if (settled || finished) return;
+          settled = true;
+          if (timer) {
+            clearTimeout(timer);
+            timer = 0;
+          }
+          if (delay) setTimeout(next, delay);
+          else next();
+        };
+        if (kind === "recite") {
+          const heavy = /[。！？]$/.test(piece);
+          u.pitch = heavy ? 0.9 : 0.98;
+          u.rate = lang === "zh-HK" ? 0.6 : 0.62;
+          u.onend = () => proceed(heavy ? 520 : 280);
+        } else {
+          u.pitch = 1.18;
+          u.rate = 0.92;
+          u.onend = () => proceed(0);
+        }
+        const v = pickVoice(lang, kind);
+        if (v) u.voice = v;
+        u.onerror = () => proceed(0);
+        timer = setTimeout(() => {
+          try {
+            speechSynthesis.cancel();
+          } catch (e) {}
+          proceed(0);
+        }, Math.min(18000, 900 + piece.length * 420));
+        kickSpeech();
+        try {
+          speechSynthesis.speak(u);
+        } catch (e) {
+          proceed(0);
+          return;
+        }
+        kickSpeech();
+      };
+      next();
     });
+  }
+
+  function speakGrok(text, lang, gen) {
+    return fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, lang }),
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error("tts");
+        return r.arrayBuffer();
+      })
+      .then(
+        (buf) =>
+          new Promise((resolve) => {
+            if (gen !== reciter.gen) return resolve();
+            const url = URL.createObjectURL(new Blob([buf], { type: "audio/mpeg" }));
+            const a = new Audio(url);
+            reciter.audio = a;
+            const done = () => {
+              URL.revokeObjectURL(url);
+              if (reciter.audio === a) reciter.audio = null;
+              resolve();
+            };
+            a.onended = done;
+            a.onerror = done;
+            a.play().catch(done);
+          })
+      );
+  }
+
+  function speak(text, lang, kind) {
+    const gen = reciter.gen;
+    if (kind === "recite" && grokTts) {
+      return speakGrok(text, lang, gen).catch(() => speakBrowser(text, lang, kind, gen));
+    }
+    return speakBrowser(text, lang, kind, gen);
+  }
+
+  async function recitePassage(text, el, mode) {
+    const gen = reciter.gen;
+    reciter.abort = false;
+    if (el) el.classList.add("reciting");
+    const langs = mode === "both" ? ["zh-TW", "zh-HK"] : [mode];
+    for (let i = 0; i < langs.length; i++) {
+      if (gen !== reciter.gen) break;
+      if (i) await wait(360);
+      if (gen !== reciter.gen) break;
+      await speak(text, langs[i], "recite");
+    }
+    if (el) el.classList.remove("reciting");
+  }
+
+  function markReciteBtn() {
+    document.querySelectorAll("#reciter-btns button").forEach((b) => {
+      const on = reciter.playing && reciter.mode === b.dataset.recite;
+      b.classList.toggle("on", on);
+      if (b.dataset.recite === "zh-TW") b.textContent = on ? "停止國語" : "國語朗誦";
+      if (b.dataset.recite === "zh-HK") b.textContent = on ? "停止粵語" : "粵語朗誦";
+      if (b.dataset.recite === "both") b.textContent = on ? "停止雙語" : "雙語朗誦";
+    });
+  }
+
+  function stopRecite(fromRoute) {
+    cancelSpeech();
+    reciter.playing = false;
+    reciter.mode = "";
+    app.querySelectorAll(".sent.reciting,.sent.current").forEach((el) => {
+      if (!lesson.on) el.classList.remove("current");
+      el.classList.remove("reciting");
+    });
+    if (!fromRoute) markReciteBtn();
+  }
+
+  async function toggleRecite(essay, mode) {
+    if (reciter.playing && reciter.mode === mode) {
+      stopRecite(false);
+      return;
+    }
+    if (lesson.on) stopLesson(false);
+    cancelSpeech();
+    reciter.playing = true;
+    reciter.mode = mode;
+    reciter.abort = false;
+    const gen = reciter.gen;
+    markReciteBtn();
+    for (let pi = 0; pi < essay.paragraphs.length; pi++) {
+      const p = essay.paragraphs[pi];
+      for (let si = 0; si < p.sentences.length; si++) {
+        if (gen !== reciter.gen) break;
+        const el = document.getElementById("s-" + pi + "-" + si);
+        if (el) {
+          app.querySelectorAll(".sent.current").forEach((x) => x.classList.remove("current"));
+          el.classList.add("current");
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        await recitePassage(p.sentences[si].text, el, mode);
+      }
+      if (gen !== reciter.gen) break;
+    }
+    if (gen === reciter.gen) {
+      reciter.playing = false;
+      reciter.mode = "";
+      markReciteBtn();
+    }
   }
 
   function wait(ms) {
@@ -537,14 +772,6 @@
     return UI[state.voice] || UI["zh-TW"];
   }
 
-  function beatSay(b) {
-    const steps = lessonScript(b);
-    return steps
-      .filter((s) => s.say)
-      .map((s) => s.say)
-      .join(" ");
-  }
-
   function lessonScript(b) {
     const L = ui();
     const e = lesson.essay;
@@ -600,12 +827,12 @@
 
   function poseSrc() {
     if (lesson.quizDone) {
-      return lesson._lastOk ? "img/anim-yes.gif" : "img/anim-no.gif";
+      return asset(lesson._lastOk ? "img/anim-yes.gif" : "img/anim-no.gif");
     }
-    if (currentQuiz()) return "img/anim-quiz.gif";
+    if (currentQuiz()) return asset("img/anim-quiz.gif");
     const b = currentBeat();
-    if (lesson.playing && b && b.kind === "sent") return "img/anim-talk.gif";
-    return "img/anim-idle.gif";
+    if (lesson.playing && b && b.kind === "sent") return asset("img/anim-talk.gif");
+    return asset("img/anim-idle.gif");
   }
 
   function makeQuiz(essay, s) {
@@ -645,15 +872,25 @@
 
   function buildBeats(essay) {
     const beats = [{ kind: "open" }];
+    let quizzes = 0;
     essay.paragraphs.forEach((p, pi) => {
       if (p.title) beats.push({ kind: "para", pi, title: p.title });
+      let used = false;
       p.sentences.forEach((s, si) => {
+        let quiz = null;
+        if (!used && quizzes < 3) {
+          quiz = makeQuiz(essay, s);
+          if (quiz) {
+            used = true;
+            quizzes += 1;
+          }
+        }
         beats.push({
           kind: "sent",
           pi,
           si,
           recitation: s.text,
-          quiz: makeQuiz(essay, s),
+          quiz,
         });
       });
     });
@@ -674,17 +911,19 @@
       stopLesson(false);
       return;
     }
+    stopRecite(false);
     lesson.on = true;
     lesson.essay = essay;
     lesson.scoreOk = 0;
     lesson.scoreN = 0;
     lesson.beats = buildBeats(essay);
     lesson.i = 0;
-    lesson.auto = false;
+    lesson.auto = true;
     lesson.quizDone = false;
     applyBody();
     document.getElementById("btn-teach").classList.add("on");
     document.getElementById("teacher").hidden = false;
+    fitTeacher();
     go(0);
   }
 
@@ -692,8 +931,10 @@
     lesson.abort = true;
     lesson.auto = false;
     lesson.playing = false;
+    lesson.playId = (lesson.playId || 0) + 1;
     stopFlap();
-    if (window.speechSynthesis) speechSynthesis.cancel();
+    cancelSpeech();
+    reciter.abort = false;
     if (hAudio) {
       hAudio.pause();
       hAudio = null;
@@ -705,6 +946,7 @@
       if (btn) btn.classList.remove("on");
       const dock = document.getElementById("teacher");
       if (dock) dock.hidden = true;
+      document.body.classList.remove("beat-sent");
       app.querySelectorAll(".sent.current").forEach((el) => el.classList.remove("current"));
       app.querySelectorAll(".tok.quiz-ok,.tok.quiz-bad").forEach((el) => {
         el.classList.remove("quiz-ok", "quiz-bad");
@@ -713,15 +955,86 @@
     lesson.on = false;
   }
 
+  let barWatch = null;
+  function fitTeacher() {
+    const nav = document.querySelector("nav.nav");
+    const bar = document.querySelector(".reader-bar");
+    document.documentElement.style.setProperty("--nav-h", (nav ? nav.offsetHeight : 56) + "px");
+    document.documentElement.style.setProperty("--bar-h", (bar ? bar.offsetHeight : 52) + "px");
+    if (typeof ResizeObserver === "undefined") return;
+    if (barWatch && barWatch.bar !== bar) {
+      barWatch.ro.disconnect();
+      barWatch = null;
+    }
+    if (bar && !barWatch) {
+      const ro = new ResizeObserver(() => {
+        const n = document.querySelector("nav.nav");
+        const b = document.querySelector(".reader-bar");
+        document.documentElement.style.setProperty("--nav-h", (n ? n.offsetHeight : 56) + "px");
+        document.documentElement.style.setProperty("--bar-h", (b ? b.offsetHeight : 52) + "px");
+      });
+      ro.observe(bar);
+      if (nav) ro.observe(nav);
+      barWatch = { bar, ro };
+    }
+  }
+
+  function scrollToCurrent(el) {
+    if (!el) return;
+    const dock = document.getElementById("teacher");
+    const bar = document.querySelector(".reader-bar");
+    const nav = document.querySelector("nav.nav");
+    const split = document.body.classList.contains("teaching") && window.matchMedia("(min-width: 901px)").matches;
+    const navH = nav ? nav.offsetHeight : 0;
+    const barH = bar ? bar.offsetHeight : 0;
+    const dockH = !split && dock && !dock.hidden ? dock.offsetHeight : 0;
+    const topReserve = navH + barH + dockH;
+    const vis = Math.max(120, window.innerHeight - topReserve);
+    const y = el.getBoundingClientRect().top + (window.scrollY || 0) - topReserve - vis * 0.16;
+    window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+  }
+
+  function markSpeakingTokens(sentEl, clause) {
+    if (!sentEl) return;
+    sentEl.querySelectorAll(".tok.speaking").forEach((el) => el.classList.remove("speaking"));
+    const raw = String(clause || "").replace(/\s+/g, "");
+    if (!raw) return;
+    const nodes = [...sentEl.querySelectorAll(".tok .ch")];
+    const hay = nodes.map((n) => n.textContent).join("");
+    let i = hay.indexOf(raw);
+    if (i < 0) {
+      const stripped = raw.replace(/[，。；：、！？]/g, "");
+      i = hay.indexOf(stripped);
+      if (i < 0) return;
+      for (let k = 0; k < stripped.length; k++) {
+        const tok = nodes[i + k] && nodes[i + k].closest(".tok");
+        if (tok) tok.classList.add("speaking");
+      }
+      return;
+    }
+    for (let k = 0; k < raw.length; k++) {
+      const tok = nodes[i + k] && nodes[i + k].closest(".tok");
+      if (tok) tok.classList.add("speaking");
+    }
+  }
+
   function highlight() {
     app.querySelectorAll(".sent.current").forEach((el) => el.classList.remove("current"));
+    app.querySelectorAll(".tok.speaking").forEach((el) => el.classList.remove("speaking"));
     const b = currentBeat();
+    document.body.classList.toggle("beat-sent", !!(b && b.kind === "sent"));
     if (b && b.kind === "sent") {
       const el = document.getElementById("s-" + b.pi + "-" + b.si);
       if (el) {
         el.classList.add("current");
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        scrollToCurrent(el);
       }
+    } else if (b && b.kind === "para") {
+      const el = document.getElementById("s-" + b.pi + "-0") || app.querySelector(".lead");
+      if (el) scrollToCurrent(el);
+    } else if (b && b.kind === "open") {
+      const el = app.querySelector(".lead") || app.querySelector(".sent");
+      if (el) scrollToCurrent(el);
     }
     app.querySelectorAll(".tok.quiz-ok,.tok.quiz-bad").forEach((el) => {
       el.classList.remove("quiz-ok", "quiz-bad");
@@ -735,19 +1048,19 @@
     const b = currentBeat();
     const quiz = currentQuiz();
     const n = lesson.beats.length;
-    const spoken = beatSay(b);
+    const firstSay = (lessonScript(b).find((s) => s.say) || {}).say || "";
     const tag = b && b.kind === "sent" ? L.explain : L.lecture;
-    const bubble = `<span class="tag">${esc(tag)}</span>${esc(spoken)}`;
+    const bubble = `<span class="tag">${esc(tag)}</span>${esc(firstSay)}`;
     let quizHtml = "";
     if (quiz && quiz.type === "choice") {
       quizHtml = `<div class="quiz"><div class="q">${esc(quizPrompt(quiz))}</div>
         <div class="opts">${quiz.options
           .map((o) => `<button type="button" class="q-opt" data-a="${esc(o)}">${esc(o)}</button>`)
           .join("")}</div>
-        <div class="q-fb" id="q-fb"></div></div>`;
+        <div class="q-fb" id="q-fb">${lesson.auto ? "答對後會自動往下講。" : ""}</div></div>`;
     } else if (quiz && quiz.type === "click") {
       quizHtml = `<div class="quiz"><div class="q">${esc(quizPrompt(quiz))}　<span style="color:var(--cinnabar)">${esc(L.clickHint)}</span></div>
-        <div class="q-fb" id="q-fb"></div></div>`;
+        <div class="q-fb" id="q-fb">${lesson.auto ? "答對後會自動往下講。" : ""}</div></div>`;
     } else if (b && b.quiz && lesson.quizDone) {
       quizHtml = `<div class="quiz"><div class="q-fb" id="q-fb"></div></div>`;
     }
@@ -779,11 +1092,13 @@
       if (lesson.playing) {
         lesson.abort = true;
         lesson.auto = false;
-        if (window.speechSynthesis) speechSynthesis.cancel();
-    if (hAudio) {
-      hAudio.pause();
-      hAudio = null;
-    }
+        lesson.playId = (lesson.playId || 0) + 1;
+        cancelSpeech();
+        reciter.abort = false;
+        if (hAudio) {
+          hAudio.pause();
+          hAudio = null;
+        }
         lesson.playing = false;
         renderDock();
       } else {
@@ -795,11 +1110,13 @@
       if (lesson.auto) playBeat();
       else {
         lesson.abort = true;
-        if (window.speechSynthesis) speechSynthesis.cancel();
-    if (hAudio) {
-      hAudio.pause();
-      hAudio = null;
-    }
+        lesson.playId = (lesson.playId || 0) + 1;
+        cancelSpeech();
+        reciter.abort = false;
+        if (hAudio) {
+          hAudio.pause();
+          hAudio = null;
+        }
         lesson.playing = false;
         renderDock();
       }
@@ -817,13 +1134,16 @@
     dock.querySelectorAll(".q-opt").forEach((btn) => {
       btn.onclick = () => answerChoice(btn.dataset.a, btn);
     });
+    fitTeacher();
   }
 
   function go(i) {
     if (i < 0 || i >= lesson.beats.length) return;
     lesson.abort = true;
+    lesson.playId = (lesson.playId || 0) + 1;
     stopFlap();
-    if (window.speechSynthesis) speechSynthesis.cancel();
+    cancelSpeech();
+    reciter.abort = false;
     if (hAudio) {
       hAudio.pause();
       hAudio = null;
@@ -832,32 +1152,47 @@
     lesson.i = i;
     lesson.quizDone = false;
     lesson._lastOk = null;
-    lesson.abort = false;
     highlight();
     renderDock();
-    if (lesson.auto) playBeat();
+    const token = (lesson.nav = (lesson.nav || 0) + 1);
+    lesson.abort = false;
+    if (lesson.auto) {
+      wait(160).then(() => {
+        if (lesson.nav === token && lesson.on && lesson.auto && !lesson.abort) playBeat();
+      });
+    }
   }
 
   async function playBeat() {
     const b = currentBeat();
     if (!b) return;
+    const playId = ++lesson.playId;
     lesson.abort = false;
     lesson.playing = true;
+    highlight();
     renderDock();
     const lang = state.voice;
     const sentEl = b.kind === "sent" ? document.getElementById("s-" + b.pi + "-" + b.si) : null;
+    if (sentEl) scrollToCurrent(sentEl);
     const steps = lessonScript(b);
     for (const step of steps) {
-      if (lesson.abort) {
+      if (lesson.abort || lesson.playId !== playId) {
         stopFlap();
         if (sentEl) sentEl.classList.remove("reciting");
+        markSpeakingTokens(sentEl, "");
         return;
       }
       if (step.say) {
         if (step.mood === "quiz") setMood("quiz");
         else setMood("talk");
-        if (step.kind === "recite" && sentEl) sentEl.classList.add("reciting");
-        else if (sentEl) sentEl.classList.remove("reciting");
+        if (step.kind === "recite" && sentEl) {
+          sentEl.classList.add("reciting");
+          markSpeakingTokens(sentEl, step.say);
+          scrollToCurrent(sentEl);
+        } else if (sentEl) {
+          sentEl.classList.remove("reciting");
+          markSpeakingTokens(sentEl, "");
+        }
         const bubble = document.querySelector(".teacher .bubble");
         if (bubble) {
           const tag = step.kind === "recite" ? "誦讀" : step.mood === "quiz" ? "提問" : ui().explain;
@@ -865,12 +1200,16 @@
         }
         if (step.mood !== "quiz") startFlap();
         await speak(step.say, lang, step.kind || "explain");
+        if (lesson.playId !== playId) return;
         stopFlap();
         setMood(step.mood === "quiz" ? "quiz" : "idle");
       }
       if (step.pause) await wait(step.pause);
+      if (lesson.playId !== playId) return;
     }
+    if (lesson.playId !== playId) return;
     if (sentEl) sentEl.classList.remove("reciting");
+    markSpeakingTokens(sentEl, "");
     stopFlap();
     lesson.playing = false;
     renderDock();
@@ -880,7 +1219,7 @@
     }
     if (lesson.auto && lesson.i < lesson.beats.length - 1) {
       await wait(1200);
-      if (!lesson.abort && lesson.auto) go(lesson.i + 1);
+      if (!lesson.abort && lesson.auto && lesson.playId === playId) go(lesson.i + 1);
     } else {
       lesson.auto = false;
       renderDock();
@@ -901,8 +1240,9 @@
     if (grow) grow.textContent = L.score(lesson.scoreOk, lesson.scoreN);
     playClip(ok ? "yes" : "no");
     if (ok && lesson.auto) {
+      const playId = lesson.playId;
       setTimeout(() => {
-        if (lesson.auto && !lesson.abort) go(lesson.i + 1);
+        if (lesson.auto && !lesson.abort && lesson.playId === playId) go(lesson.i + 1);
       }, 1800);
     }
   }
@@ -936,8 +1276,8 @@
       lesson._lastOk = false;
       const face = document.querySelector(".teacher .face");
       if (face) {
-        face.src = "img/anim-no.gif";
-        face.setAttribute("data-src", "img/anim-no.gif");
+        face.src = asset("img/anim-no.gif");
+        face.setAttribute("data-src", asset("img/anim-no.gif"));
       }
       if (fb) fb.textContent = ui().bad;
       const grow = document.querySelector(".t-ctrl .grow");
@@ -960,6 +1300,7 @@
 
   document.addEventListener("keydown", (ev) => {
     if (!lesson.on) return;
+    if (ev.target && /input|textarea/i.test(ev.target.tagName)) return;
     if (ev.key === "ArrowRight") {
       ev.preventDefault();
       go(lesson.i + 1);
@@ -973,7 +1314,9 @@
       if (lesson.playing) {
         lesson.abort = true;
         lesson.auto = false;
-        speechSynthesis.cancel();
+        lesson.playId = (lesson.playId || 0) + 1;
+        cancelSpeech();
+        reciter.abort = false;
         lesson.playing = false;
         renderDock();
       } else playBeat();
