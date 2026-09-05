@@ -551,11 +551,11 @@
         if (kind === "recite") {
           const heavy = /[。！？]$/.test(piece);
           u.pitch = heavy ? 0.92 : 1;
-          u.rate = lang === "zh-HK" ? 0.72 : 0.78;
+          u.rate = lang === "zh-HK" ? 0.52 : 0.56;
           u.onend = () => proceed(heavy ? 380 : 180);
         } else {
           u.pitch = 1.12;
-          u.rate = 0.95;
+          u.rate = 0.78;
           u.onend = () => proceed(80);
         }
         const v = pickVoice(lang, kind);

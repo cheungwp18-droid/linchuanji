@@ -98,6 +98,7 @@ WEN_DUK = {
     "行": "hang4", "衡": "hang4",
     "寧": "ning4", "靜": "zing6", "爭": "zang1", "耕": "gang1",
     "學": "hok6", "覺": "gok3", "嶽": "ngok6",
+    "病": "bing6",
     "白": "baak6", "百": "baak3", "柏": "baak3",
     "石": "sek6", "赤": "cik3", "客": "haak3",
     "惜": "sik1", "席": "zik6", "夕": "zik6",
@@ -107,6 +108,7 @@ WEN_DUK = {
     "間": "gaan1", "閒": "haan4",
     "說": "syut3", "閱": "jyut6",
     "樂": "lok6",
+    "曰": "jyut6",
     "長": "coeng4", "平": "ping4",
     "大": "daai6", "夫": "fu1",
     "為": "wai4", "謂": "wai6",
@@ -125,7 +127,7 @@ WEN_DUK = {
     "若": "joek6", "如": "jyu4", "然": "jin4",
     "雖": "seoi1", "即": "zik1", "既": "gei3",
     "或": "waak6", "莫": "mok6",
-    "曰": "joek6", "云": "wan4", "言": "jin4",
+    "云": "wan4", "言": "jin4",
     "之": "zi1", "知": "zi1", "師": "si1",
     "人": "jan4", "民": "man4", "君": "gwan1",
     "天": "tin1", "地": "dei6", "山": "saan1", "水": "seoi2",
@@ -158,10 +160,13 @@ def apply_literary(clean: str, pys: list[str], jps: list[str]) -> None:
     if n != len(pys):
         return
 
+    special = set()
+
     def set_i(i: int, py: str, jp: str) -> None:
         if 0 <= i < n:
             pys[i] = py
             jps[i] = jp
+            special.add(i)
 
     def find(sub: str) -> list[int]:
         out = []
@@ -431,27 +436,71 @@ def apply_literary(clean: str, pys: list[str], jps: list[str]) -> None:
     # 樂 remaining stay lè / lok6 which is default for 快樂
     # 王守仁 name wáng — default good
 
-    # Apply 文讀 overlay for jyutping when still default-ish
+    for idx in find("萬乘"):
+        set_i(idx + 1, "shèng", "sing6")
+    for idx in find("千乘"):
+        set_i(idx + 1, "shèng", "sing6")
+    for idx in find("卒乘"):
+        set_i(idx + 1, "shèng", "sing6")
+    for idx in find("將數"):
+        set_i(idx, "jiàng", "zoeng3")
+    for idx in find("聖聽"):
+        set_i(idx + 1, "tīng", "ting3")
+    for idx in find("為酒"):
+        set_i(idx, "wéi", "wai4")
+    for idx in find("為惑"):
+        set_i(idx, "wéi", "wai4")
+    for idx in find("燕楚"):
+        set_i(idx, "yān", "jin1")
+
+    # 文讀 overlay：白讀改文讀；曰必須 jyut6
+    bai_to_wen = {
+        "saang1": "sang1",
+        "ceng1": "cing1",
+        "zeng3": "zing3",
+        "meng2": "ming4",
+        "meng6": "ming6",
+        "seng1": "sing1",
+        "seng4": "sing4",
+        "ceng4": "cing4",
+        "ceng2": "cing2",
+        "haang4": "hang4",
+        "teng1": "ting1",
+        "geng1": "ging1",
+        "peng4": "ping4",
+        "sei2": "si2",
+        "kan5": "gan6",
+        "lau2": "lau4",
+        "tau2": "tau4",
+        "man2": "man4",
+        "goi3": "koi3",
+        "fau6": "fuk6",
+        "tyun5": "dyun6",
+        "naap6": "noi6",
+        "gung4": "gung1",
+        "si2": "si6",
+        "joek6": "jyut6",  # only when char is 曰
+    }
     for i, ch in enumerate(hans):
-        if ch in WEN_DUK:
-            # don't overwrite jyutping if we already set a special one
-            # Only fill when ToJyutping produced a 白讀 that we want to replace
-            preferred = WEN_DUK[ch]
-            # Always prefer 文讀 for these scholarly recitation chars
-            # but skip if we already set a non-default special reading in this function
-            # Simplest: if current jp is empty, set; for 白讀 pairs, overwrite
-            bai_to_wen = {
-                "saang1": "sang1",  # 生
-                "ceng1": "cing1",  # 青
-                "zeng3": "zing3",  # 正
-                "meng2": "ming4",  # 名 sometimes
-                "seng4": "sing4",
-                "ceng4": "cing4",
-            }
-            if jps[i] in bai_to_wen:
-                jps[i] = bai_to_wen[jps[i]]
-            if ch in ("不",):
-                jps[i] = "bat1"
+        if ch == "曰":
+            pys[i] = "yuē"
+            jps[i] = "jyut6"
+            continue
+        if i in special:
+            continue
+        if ch == "行" and jps[i] == "haang4":
+            jps[i] = "hang4"
+            continue
+        if ch == "士" and jps[i] == "si2":
+            jps[i] = "si6"
+            continue
+        if ch in WEN_DUK and jps[i] in bai_to_wen:
+            jps[i] = bai_to_wen[jps[i]]
+        elif jps[i] in bai_to_wen and ch != "若":
+            # 若 is joek6 correctly; 曰 already handled
+            if ch not in ("若", "弱", "約"):
+                if ch in ("聲", "聽", "請", "驚", "平", "命", "死", "文", "樓", "近", "頭", "斷", "蓋", "復", "內", "公", "行", "生", "青", "正"):
+                    jps[i] = bai_to_wen[jps[i]]
 
 
 def parse_inline(raw: str) -> tuple[str, dict[int, tuple[str, str | None]]]:
