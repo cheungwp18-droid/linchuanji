@@ -487,16 +487,16 @@
   }
 
   function unlockSpeech() {
+    try {
+      const a = new Audio(asset("audio/say/ping.m4a"));
+      a.volume = 1;
+      reciter.audio = a;
+      a.play().catch(() => {});
+    } catch (e) {}
     if (!window.speechSynthesis) return;
     try {
       speechSynthesis.getVoices();
       speechSynthesis.resume();
-      const u = new SpeechSynthesisUtterance("。");
-      u.volume = 0.01;
-      u.rate = 2;
-      u.lang = state.voice === "zh-HK" ? "zh-HK" : "zh-TW";
-      holdUtter(u);
-      speechSynthesis.speak(u);
     } catch (e) {}
   }
 
@@ -613,12 +613,45 @@
       );
   }
 
+  function clipHash(lang, text) {
+    let h = 5381;
+    const s = String(lang) + "\n" + String(text);
+    for (let i = 0; i < s.length; i++) {
+      h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+    }
+    return h.toString(16);
+  }
+
+  function hasSay(lang, id) {
+    const pack = window.WENYAN_SAY;
+    const list = pack && pack[lang];
+    return !!(list && list.indexOf(id) >= 0);
+  }
+
+  function speakFile(lang, id, gen) {
+    return new Promise((resolve) => {
+      if (gen !== reciter.gen) return resolve();
+      const a = new Audio(asset("audio/say/" + lang + "/" + id + ".m4a"));
+      reciter.audio = a;
+      const done = () => {
+        if (reciter.audio === a) reciter.audio = null;
+        resolve();
+      };
+      a.onended = done;
+      a.onerror = done;
+      a.play().catch(done);
+    });
+  }
+
   function speak(text, lang, kind) {
     const gen = reciter.gen;
+    const raw = String(text || "");
+    const id = clipHash(lang, raw);
+    if (hasSay(lang, id)) return speakFile(lang, id, gen);
     if (kind === "recite" && grokTts) {
-      return speakGrok(text, lang, gen).catch(() => speakBrowser(text, lang, kind, gen));
+      return speakGrok(raw, lang, gen).catch(() => speakBrowser(raw, lang, kind, gen));
     }
-    return speakBrowser(text, lang, kind, gen);
+    return speakBrowser(raw, lang, kind, gen);
   }
 
   async function recitePassage(text, el, mode) {
@@ -834,15 +867,10 @@
     }
     if (b.kind === "sent") {
       const s = e.paragraphs[b.pi].sentences[b.si];
-      add(L.look, "explain", 550);
-      add(L.reciting, "explain", 400);
-      const bits = clauses(s.text);
-      bits.forEach((c, i) => {
-        const last = i === bits.length - 1;
-        const heavy = /[。！？]$/.test(c);
-        add(c, "recite", last ? 900 : heavy ? 700 : 420);
-      });
-      if (s.trans) add(L.meaning + s.trans, "explain", 800);
+      add(L.look, "explain", 280);
+      add(L.reciting, "explain", 180);
+      add(s.text, "recite", 700);
+      if (s.trans) add(L.meaning + s.trans, "explain", 500);
       const notes = (s.notes || []).filter((n) => !n.auto);
       if (notes[0]) add(L.point(notes[0]), "explain", 750);
       else if (s.grammar) add(s.grammar, "explain", 750);
