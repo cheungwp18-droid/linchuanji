@@ -10,6 +10,7 @@ import asyncio
 import json
 import re
 import sys
+import time
 from pathlib import Path
 
 import edge_tts
@@ -18,10 +19,11 @@ ROOT = Path(__file__).resolve().parent
 ESSAYS = ROOT / "data" / "essays.js"
 OUT = ROOT / "audio" / "say"
 VOICES = {
-    "zh-TW": "zh-CN-XiaoxiaoNeural",  # 國語按鈕：用標準普通話
-    "zh-HK": "zh-HK-HiuMaanNeural",
+    "zh-TW": "zh-CN-YunyangNeural",  # 新聞／紀錄片旁述
+    "zh-HK": "zh-HK-WanLungNeural",  # 香港電視男聲旁述
 }
-RATE = "-25%"
+RATE = "-18%"
+PITCH = "-6Hz"
 
 UI = {
     "zh-TW": [
@@ -103,30 +105,30 @@ def collect():
     return uniq
 
 
-async def render_one(sem, lang, text, dest: Path) -> str:
+async def render_one(sem, lang, text, dest: Path, fresh_after: float) -> str:
     async with sem:
         dest.parent.mkdir(parents=True, exist_ok=True)
+        if dest.exists() and dest.stat().st_mtime >= fresh_after and dest.stat().st_size > 400:
+            return "skip"
         tmp = dest.with_suffix(".tmp.mp3")
-        try:
-            comm = edge_tts.Communicate(text, VOICES[lang], rate=RATE)
-            await comm.save(str(tmp))
-            if not tmp.exists() or tmp.stat().st_size < 400:
-                return "fail-empty"
-            tmp.replace(dest)
-            return "ok"
-        except Exception:
+        last = "fail"
+        for _ in range(3):
             try:
-                tmp.unlink(missing_ok=True)
-            except TypeError:
+                comm = edge_tts.Communicate(text, VOICES[lang], rate=RATE, pitch=PITCH)
+                await asyncio.wait_for(comm.save(str(tmp)), timeout=45)
+                if tmp.exists() and tmp.stat().st_size >= 400:
+                    tmp.replace(dest)
+                    return "ok"
+                last = "fail-empty"
+            except Exception as e:
+                last = "fail"
+            try:
                 if tmp.exists():
-                    tmp.unlink()
-            return "fail"
-        finally:
-            try:
-                if tmp.exists() and tmp != dest:
                     tmp.unlink()
             except OSError:
                 pass
+            await asyncio.sleep(0.6)
+        return last
 
 
 async def main_async():
@@ -136,11 +138,12 @@ async def main_async():
         dest = OUT / lang / f"{hid}.mp3"
         jobs.append((lang, text, dest, hid))
     print(f"clips {len(jobs)} voices={VOICES} rate={RATE}", flush=True)
-    sem = asyncio.Semaphore(5)
-    ok = fail = 0
+    fresh_after = time.time() - 50 * 60
+    sem = asyncio.Semaphore(3)
+    ok = fail = skip = 0
     index = {"zh-TW": [], "zh-HK": []}
     async def tagged(lang, hid, dest, text):
-        st = await render_one(sem, lang, text, dest)
+        st = await render_one(sem, lang, text, dest, fresh_after)
         return lang, hid, st
 
     tasks = [tagged(lang, hid, dest, text) for lang, text, dest, hid in jobs]
@@ -151,11 +154,14 @@ async def main_async():
         if st == "ok":
             ok += 1
             index[lang].append(hid)
+        elif st == "skip":
+            skip += 1
+            index[lang].append(hid)
         else:
             fail += 1
             print("fail", lang, hid, st, flush=True)
         if n % 50 == 0 or n == len(jobs):
-            print(f"... {n}/{len(jobs)} ok={ok} fail={fail}", flush=True)
+            print(f"... {n}/{len(jobs)} ok={ok} skip={skip} fail={fail}", flush=True)
     ping_src = OUT / "zh-TW" / f"{clip_hash('zh-TW', '講')}.mp3"
     ping_dst = OUT / "ping.mp3"
     if ping_src.exists():
@@ -164,7 +170,7 @@ async def main_async():
         "window.WENYAN_SAY = " + json.dumps(index, ensure_ascii=False) + ";\n",
         encoding="utf-8",
     )
-    print(f"done ok={ok} fail={fail} -> {OUT}", flush=True)
+    print(f"done ok={ok} skip={skip} fail={fail} -> {OUT}", flush=True)
     return 0 if fail == 0 else 1
 
 
