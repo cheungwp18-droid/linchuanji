@@ -14,6 +14,9 @@ import time
 from pathlib import Path
 
 import edge_tts
+from tts_ssml import install_ssml_hooks, mark_original
+
+install_ssml_hooks()
 
 ROOT = Path(__file__).resolve().parent
 ESSAYS = ROOT / "data" / "essays.js"
@@ -66,10 +69,12 @@ def collect():
     data = load_essays()
     items = []
 
-    def add(lang, text):
+    def add(lang, text, tokens=None):
         text = str(text or "").strip()
-        if text:
-            items.append((lang, text))
+        if not text:
+            return
+        spoken = mark_original(lang, text, tokens) if tokens else text
+        items.append((lang, text, spoken))
 
     for lang, phrases in UI.items():
         for p in phrases:
@@ -94,21 +99,27 @@ def collect():
                 add("zh-HK", f"下一段，「{p['title']}」。")
             for s in p.get("sentences") or []:
                 if s.get("text"):
-                    add("zh-TW", s["text"])
-                    add("zh-HK", s["text"])
+                    toks = s.get("tokens")
+                    add("zh-TW", s["text"], toks)
+                    add("zh-HK", s["text"], toks)
                 if s.get("trans"):
                     add("zh-TW", "意思是：" + s["trans"])
                     add("zh-HK", "意思係：" + s["trans"])
     uniq = {}
-    for lang, text in items:
-        uniq[(lang, text)] = clip_hash(lang, text)
+    for lang, original, spoken in items:
+        uniq[(lang, original)] = (clip_hash(lang, original), spoken)
     return uniq
 
 
-async def render_one(sem, lang, text, dest: Path, fresh_after: float) -> str:
+async def render_one(sem, lang, text, dest: Path, fresh_after: float, force: bool = False) -> str:
     async with sem:
         dest.parent.mkdir(parents=True, exist_ok=True)
-        if dest.exists() and dest.stat().st_mtime >= fresh_after and dest.stat().st_size > 400:
+        if (
+            not force
+            and dest.exists()
+            and dest.stat().st_mtime >= fresh_after
+            and dest.stat().st_size > 400
+        ):
             return "skip"
         tmp = dest.with_suffix(".tmp.mp3")
         last = "fail"
@@ -134,19 +145,19 @@ async def render_one(sem, lang, text, dest: Path, fresh_after: float) -> str:
 async def main_async():
     uniq = collect()
     jobs = []
-    for (lang, text), hid in uniq.items():
+    for (lang, original), (hid, spoken) in uniq.items():
         dest = OUT / lang / f"{hid}.mp3"
-        jobs.append((lang, text, dest, hid))
+        jobs.append((lang, spoken, dest, hid, spoken != original))
     print(f"clips {len(jobs)} voices={VOICES} rate={RATE}", flush=True)
     fresh_after = time.time() - 50 * 60
     sem = asyncio.Semaphore(3)
     ok = fail = skip = 0
     index = {"zh-TW": [], "zh-HK": []}
-    async def tagged(lang, hid, dest, text):
-        st = await render_one(sem, lang, text, dest, fresh_after)
+    async def tagged(lang, hid, dest, text, force):
+        st = await render_one(sem, lang, text, dest, fresh_after, force)
         return lang, hid, st
 
-    tasks = [tagged(lang, hid, dest, text) for lang, text, dest, hid in jobs]
+    tasks = [tagged(lang, hid, dest, text, force) for lang, text, dest, hid, force in jobs]
     n = 0
     for fut in asyncio.as_completed(tasks):
         lang, hid, st = await fut
